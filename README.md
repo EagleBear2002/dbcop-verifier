@@ -58,11 +58,11 @@ cargo build --release
 src
 ├── consistency // 和一致性相关
 │   ├── algo.rs
-│   ├── mod.rs // 声明模块
+│   ├── mod.rs // 声明模块和一致性
 │   ├── sat.rs
 │   └── util.rs
 ├── db // 和数据库执行相关
-│   ├── cluster.rs
+│   ├── cluster.rs // 似乎和分布式/并发执行有关，该项目中没有用到，已从 mod.rs 中移除
 │   ├── history.rs
 │   └── mod.rs // 声明模块
 ├── lib.rs // 声明模块和依赖
@@ -70,7 +70,7 @@ src
 └── verifier // 和一致性验证相关算法
     ├── mod.rs
     └── util.rs
-examples
+examples // 没有用到
 ├── antidotedb.rs
 ├── cockroachdb.rs
 ├── disql.rs
