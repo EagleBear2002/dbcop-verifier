@@ -131,49 +131,6 @@ fn main() {
             }
         }
         ("verify", Some(matches)) => {
-            // let v_dir = Path::new(matches.value_of("v_directory").unwrap());
-            //
-            // let histories: Vec<History> = fs::read_dir(v_dir)
-            //     .expect("couldn't read history directory")
-            //     .filter_map(|entry_res| match entry_res {
-            //         Ok(ref entry) if entry.path().is_dir() => {
-            //             let file = File::open(entry.path().join("history.bincode")).unwrap();
-            //             let buf_reader = BufReader::new(file);
-            //             Some(bincode::deserialize_from(buf_reader).unwrap())
-            //         }
-            //         _ => None,
-            //     })
-            //     .collect();
-            //
-            // let o_dir = Path::new(matches.value_of("o_directory").unwrap());
-            //
-            // if !o_dir.is_dir() {
-            //     fs::create_dir_all(o_dir).expect("failed to create directory");
-            // }
-            //
-            // histories.iter().for_each(|ref hist| {
-            //     let curr_dir = o_dir.join(format!("hist-{:05}", hist.get_id()));
-            //
-            //     let mut verifier = Verifier::new(curr_dir.to_path_buf());
-            //
-            //     if matches.is_present("causal") {
-            //         verifier.model("cc");
-            //     } else if matches.is_present("snapshot_isolation") {
-            //         verifier.model("si");
-            //     } else if matches.is_present("serializable") {
-            //         verifier.model("ser");
-            //     }
-            //
-            //     verifier.sat(matches.is_present("sat"));
-            //     verifier.bicomponent(matches.is_present("bicomponent"));
-            //
-            //     if !verifier.transactional_history_verify(hist.get_data()) {
-            //         println!("hist-{:05} failed", hist.get_id());
-            //     } else {
-            //         println!("hist-{:05} done", hist.get_id());
-            //     }
-            // });
-
             let v_path =
                 Path::new(matches.value_of("v_directory").unwrap()).join("history.bincode");
             let file = File::open(v_path).unwrap();

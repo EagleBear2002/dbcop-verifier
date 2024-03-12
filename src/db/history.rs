@@ -164,9 +164,6 @@ pub fn generate_single_history(
     let jump = (n_variable as f64 / n_node as f64).ceil() as usize;
     (0..n_node)
         .map(|i_node| {
-            // let i = i_node * jump;
-            // let j = std::cmp::min((i_node + 1) * jump, n_variable);
-            // let write_variable_range = Uniform::from(i..j);
             (0..n_transaction)
                 .map(|_| Transaction {
                     events: (0..n_event)
@@ -176,7 +173,6 @@ pub fn generate_single_history(
                                 Event::read(variable)
                             } else {
                                 let variable = read_variable_range.sample(&mut random_generator);
-                                // let variable = write_variable_range.sample(&mut random_generator);
                                 let value = {
                                     let entry = counters.entry(variable).or_insert(0);
                                     *entry += 1;

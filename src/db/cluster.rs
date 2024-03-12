@@ -1,7 +1,4 @@
 use db::history::{HistParams, History, Session};
-// use verifier::Verifier;
-
-// use std::collections::HashMap;
 
 use std::fs;
 use std::fs::File;
@@ -10,15 +7,9 @@ use std::path::Path;
 
 use std::net::IpAddr;
 
-// use rand::distributions::{Distribution, Uniform};
-// use rand::Rng;
 use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
-
-// use std::convert::From;
-
-// use serde_yaml;
 
 #[derive(Debug, Clone)]
 pub struct Node {
@@ -64,16 +55,6 @@ where
                 _ => None,
             })
             .collect();
-
-        // let histories: Vec<History> = (0..1000)
-        //     .flat_map(|id| {
-        //         let filename = format!("hist-{:05}.json", id);
-        //         println!("hello");
-        //         let file = File::open(r_dir.join(filename)).unwrap();
-        //         let buf_reader = BufReader::new(file);
-        //         serde_json::from_reader(buf_reader)
-        //     })
-        //     .collect();
 
         for history in histories.iter() {
             let curr_dir = o_dir.join(format!("hist-{:05}", history.get_id()));

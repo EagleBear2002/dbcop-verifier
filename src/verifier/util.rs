@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 
+// Undirected Graph
 #[derive(Default, Debug)]
 pub struct UGraph<T>
 where
