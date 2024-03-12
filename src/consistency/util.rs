@@ -73,7 +73,20 @@ where
         }
     }
 
-    // insert edges in g into self
+    pub fn take_closure(&self) -> Self {
+        DiGraph {
+            adj_map: self
+                .adj_map
+                .keys()
+                .map(|&u| {
+                    let mut reachable: HashSet<T> = Default::default();
+                    self.dfs_util_all(&u, &mut reachable);
+                    (u, reachable)
+                })
+                .collect(),
+        }
+    }
+
     pub fn union_with(&mut self, g: &Self) -> bool {
         let mut change = false;
         for (&u, vs) in g.adj_map.iter() {
