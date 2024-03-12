@@ -45,7 +45,7 @@ where
 
     pub fn has_cycle(&self) -> bool {
         self.adj_map.keys().any(|u| {
-            // TODO: remaining for optimization
+            // TODO: Memoized search can be faster!
             let mut reachable: HashSet<T> = Default::default();
             self.dfs_util_reach(u, u, &mut reachable)
         })
@@ -73,6 +73,7 @@ where
         }
     }
 
+    // connect reachable pairs directly
     pub fn take_closure(&self) -> Self {
         DiGraph {
             adj_map: self

@@ -5,6 +5,7 @@ use consistency::util::{ConstrainedLinearization, DiGraph};
 use slog::Logger;
 
 type TransactionId = (usize, usize);
+// TODO: type TransactionInfo = (HashMap<Variable, TransactionId>, Variable)
 type TransactionInfo = (HashMap<usize, TransactionId>, HashSet<usize>);
 type Variable = usize;
 
@@ -14,6 +15,7 @@ pub struct AtomicHistoryPO {
     pub vis: DiGraph<TransactionId>,
     pub root: TransactionId,
     pub txns_info: HashMap<TransactionId, TransactionInfo>,
+    // A DiGraph for every variable
     pub wr_rel: HashMap<Variable, DiGraph<TransactionId>>,
 }
 
@@ -36,6 +38,7 @@ impl AtomicHistoryPO {
         let mut wr_rel: HashMap<Variable, DiGraph<TransactionId>> = Default::default();
 
         for (&txn_id, txn_info) in txns_info.iter() {
+            // TODO: No need to add_vertex(), for add_edge() also add vertex. If so, causal_ww and causal_rw may be faster.
             for &var in txn_info.1.iter() {
                 wr_rel
                     .entry(var)
@@ -59,6 +62,7 @@ impl AtomicHistoryPO {
         }
     }
 
+    // TODO: can be optimized if called multi times
     pub fn get_wr(&self) -> DiGraph<TransactionId> {
         let mut wr: DiGraph<TransactionId> = Default::default();
 
@@ -73,6 +77,7 @@ impl AtomicHistoryPO {
         self.vis.union_with(g)
     }
 
+    // check if vis relation is transitive(can be closured)
     pub fn vis_is_trans(&mut self) -> bool {
         let closure = self.vis.take_closure();
         let change = self
@@ -89,7 +94,9 @@ impl AtomicHistoryPO {
 
         for (&x, wr_x) in self.wr_rel.iter() {
             let mut ww_x: DiGraph<TransactionId> = Default::default();
+            // t1 ->(wr_x) t3
             for (t1, t3s) in wr_x.adj_map.iter() {
+                // t2 writes x
                 for (t2, _) in wr_x.adj_map.iter() {
                     if t1 != t2
                         && (self.vis.has_edge(t2, t1)
@@ -110,8 +117,14 @@ impl AtomicHistoryPO {
 
         for (&x, wr_x) in self.wr_rel.iter() {
             let mut rw_x: DiGraph<TransactionId> = Default::default();
+            // t1 ->(wr_x) t3
             for (t1, t3s) in wr_x.adj_map.iter() {
+                // t2 writes x
                 for (t2, _) in wr_x.adj_map.iter() {
+                    // TODO: pruning in loop
+                    // if t1 != t2
+                    //     && (self.vis.has_edge(t1, t2)
+                    //     || t3s.iter().any(|t3| self.vis.has_edge(t3, t2)))
                     if t1 != t2 {
                         for t3 in t3s.iter() {
                             if t3 != t2 && (self.vis.has_edge(t3, t2) || self.vis.has_edge(t1, t2))
