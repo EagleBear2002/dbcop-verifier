@@ -8,6 +8,7 @@ use std::collections::VecDeque;
 
 use std::collections::BTreeSet;
 
+// Directed Graph
 #[derive(Default, Debug, Clone)]
 pub struct DiGraph<T>
 where
@@ -44,11 +45,13 @@ where
 
     pub fn has_cycle(&self) -> bool {
         self.adj_map.keys().any(|u| {
+            // TODO: remaining for optimization
             let mut reachable: HashSet<T> = Default::default();
             self.dfs_util_reach(u, u, &mut reachable)
         })
     }
 
+    // whether s is reachable for u
     fn dfs_util_reach(&self, s: &T, u: &T, reachable: &mut HashSet<T>) -> bool {
         if let Some(vs) = self.adj_map.get(u) {
             for &v in vs.iter() {
@@ -70,20 +73,7 @@ where
         }
     }
 
-    pub fn take_closure(&self) -> Self {
-        DiGraph {
-            adj_map: self
-                .adj_map
-                .keys()
-                .map(|&u| {
-                    let mut reachable: HashSet<T> = Default::default();
-                    self.dfs_util_all(&u, &mut reachable);
-                    (u, reachable)
-                })
-                .collect(),
-        }
-    }
-
+    // insert edges in g into self
     pub fn union_with(&mut self, g: &Self) -> bool {
         let mut change = false;
         for (&u, vs) in g.adj_map.iter() {
