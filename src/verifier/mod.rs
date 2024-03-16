@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-use consistency::sat::Sat;
+// use consistency::sat::Sat;
 use consistency::Consistency;
 use db::history::Session;
 
@@ -80,6 +80,7 @@ impl Verifier {
         root_logger
     }
 
+    // write_map: HashMap<(variable, value), (session_id, i_transaction, i_event)>
     pub fn gen_write_map(histories: &[Session]) -> HashMap<(usize, usize), (usize, usize, usize)> {
         let mut write_map = HashMap::new();
 
@@ -401,37 +402,37 @@ impl Verifier {
             (HashMap<usize, (usize, usize)>, HashSet<usize>),
         >,
     ) -> Option<Consistency> {
-        if self.use_sat {
-            let mut sat_solver = Sat::new(&transaction_infos);
-
-            sat_solver.pre_vis_co();
-            sat_solver.session();
-            sat_solver.wr();
-            sat_solver.read_atomic();
-
-            match self.consistency_model {
-                Consistency::Causal => {
-                    sat_solver.vis_transitive();
-                }
-                Consistency::Prefix => {
-                    sat_solver.prefix();
-                }
-                Consistency::SnapshotIsolation => {
-                    sat_solver.prefix();
-                    sat_solver.conflict();
-                }
-                Consistency::Serializable => {
-                    sat_solver.ser();
-                }
-                _ => unreachable!(),
-            }
-
-            if sat_solver.solve().is_some() {
-                None
-            } else {
-                Some(self.consistency_model)
-            }
-        } else {
+        // if self.use_sat {
+        //     let mut sat_solver = Sat::new(&transaction_infos);
+        //
+        //     sat_solver.pre_vis_co();
+        //     sat_solver.session();
+        //     sat_solver.wr();
+        //     sat_solver.read_atomic();
+        //
+        //     match self.consistency_model {
+        //         Consistency::Causal => {
+        //             sat_solver.vis_transitive();
+        //         }
+        //         Consistency::Prefix => {
+        //             sat_solver.prefix();
+        //         }
+        //         Consistency::SnapshotIsolation => {
+        //             sat_solver.prefix();
+        //             sat_solver.conflict();
+        //         }
+        //         Consistency::Serializable => {
+        //             sat_solver.ser();
+        //         }
+        //         _ => unreachable!(),
+        //     }
+        //
+        //     if sat_solver.solve().is_some() {
+        //         None
+        //     } else {
+        //         Some(self.consistency_model)
+        //     }
+        // } else {
             info!(self.log, "using our algorithms");
 
             match self.consistency_model {
@@ -618,6 +619,6 @@ impl Verifier {
                     unreachable!();
                 }
             }
-        }
+        // }
     }
 }
