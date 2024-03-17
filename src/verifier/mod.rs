@@ -89,7 +89,7 @@ impl Verifier {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 for (i_event, event) in transaction.events.iter().enumerate() {
                     if event.write {
-                        // TODO: why [i_node + 1]?
+                        // history[0] is root session which writes 0 for all variables
                         if write_map
                             .insert(
                                 (event.variable, event.value),
@@ -273,12 +273,14 @@ impl Verifier {
         info!(self.log, "each read from latest write");
         info!(self.log, "atomic reads");
 
+        // transaction_infos: HashMap<(i_node + 1, i_transaction), (read_info, write_info)>
         let mut transaction_infos = HashMap::new();
 
         let mut root_write_info = HashSet::new();
 
         for (i_node, session) in histories.iter().enumerate() {
             for (i_transaction, transaction) in session.iter().enumerate() {
+                // read_info: HashMap<event.variable, (wr_i_node, wr_i_transaction)>
                 let mut read_info = HashMap::new();
                 let mut write_info = HashSet::new();
                 if transaction.success {
@@ -296,6 +298,8 @@ impl Verifier {
                                     assert_eq!(wr_i_transaction, 0);
                                     root_write_info.insert(event.variable);
                                 }
+                                // TODO: fix the line for the same format above
+                                // if !(wr_i_node == i_node + 1 && wr_i_transaction == i_transaction) {
                                 if wr_i_node != i_node + 1 || wr_i_transaction != i_transaction {
                                     if let Some((old_i_node, old_i_transaction)) = read_info
                                         .insert(event.variable, (wr_i_node, wr_i_transaction))
@@ -333,6 +337,7 @@ impl Verifier {
             info!(self.log, "using bicomponent");
         }
 
+        // TODO: to be understood
         if self.use_bicomponent {
             // communication graph
             info!(self.log, "doing bicomponent decomposition");

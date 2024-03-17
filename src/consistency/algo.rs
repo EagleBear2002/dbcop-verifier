@@ -77,7 +77,7 @@ impl AtomicHistoryPO {
         self.vis.union_with(g)
     }
 
-    // check if vis relation is transitive(can be closured)
+    // check if vis relation is transitive(can be closured). If is, clusure
     pub fn vis_is_trans(&mut self) -> bool {
         let closure = self.vis.take_closure();
         let change = self
