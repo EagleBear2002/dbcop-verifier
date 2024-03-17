@@ -13,9 +13,9 @@ use consistency::algo::{
 };
 use consistency::util::ConstrainedLinearization;
 
-mod util;
+// mod util;
 
-use self::util::{BiConn, UGraph};
+// use self::util::{BiConn, UGraph};
 
 use slog::{Drain, Logger};
 
@@ -337,61 +337,60 @@ impl Verifier {
             info!(self.log, "using bicomponent");
         }
 
-        // TODO: to be understood
-        if self.use_bicomponent {
-            // communication graph
-            info!(self.log, "doing bicomponent decomposition");
-            let mut access_map = HashMap::new();
-            {
-                let mut access_vars = HashSet::new();
-                for (i_node, session) in histories.iter().enumerate() {
-                    for transaction in session.iter() {
-                        if transaction.success {
-                            for event in transaction.events.iter() {
-                                if event.success {
-                                    access_vars.insert(event.variable);
-                                }
-                            }
-                        }
-                    }
-                    for x in access_vars.drain() {
-                        access_map
-                            .entry(x)
-                            .or_insert_with(Vec::new)
-                            .push(i_node + 1);
-                    }
-                }
-            }
-
-            let mut ug: UGraph<usize> = Default::default();
-
-            for (_, ss) in access_map.drain() {
-                for &s1 in ss.iter() {
-                    for &s2 in ss.iter() {
-                        if s1 != s2 {
-                            ug.add_edge(s1, s2);
-                        }
-                    }
-                }
-            }
-
-            let biconn = BiConn::new(ug);
-
-            let biconnected_components = biconn.get_biconnected_vertex_components();
-
-            if biconnected_components.iter().all(|component| {
-                info!(self.log, "doing for component {:?}", component);
-                let restrict_infos = self.restrict(&transaction_infos, component);
-
-                self.do_hard_verification(&restrict_infos).is_none()
-            }) {
-                None
-            } else {
-                Some(self.consistency_model)
-            }
-        } else {
+        // if self.use_bicomponent {
+        //     // communication graph
+        //     info!(self.log, "doing bicomponent decomposition");
+        //     let mut access_map = HashMap::new();
+        //     {
+        //         let mut access_vars = HashSet::new();
+        //         for (i_node, session) in histories.iter().enumerate() {
+        //             for transaction in session.iter() {
+        //                 if transaction.success {
+        //                     for event in transaction.events.iter() {
+        //                         if event.success {
+        //                             access_vars.insert(event.variable);
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //             for x in access_vars.drain() {
+        //                 access_map
+        //                     .entry(x)
+        //                     .or_insert_with(Vec::new)
+        //                     .push(i_node + 1);
+        //             }
+        //         }
+        //     }
+        //
+        //     let mut ug: UGraph<usize> = Default::default();
+        //
+        //     for (_, ss) in access_map.drain() {
+        //         for &s1 in ss.iter() {
+        //             for &s2 in ss.iter() {
+        //                 if s1 != s2 {
+        //                     ug.add_edge(s1, s2);
+        //                 }
+        //             }
+        //         }
+        //     }
+        //
+        //     let biconn = BiConn::new(ug);
+        //
+        //     let biconnected_components = biconn.get_biconnected_vertex_components();
+        //
+        //     if biconnected_components.iter().all(|component| {
+        //         info!(self.log, "doing for component {:?}", component);
+        //         let restrict_infos = self.restrict(&transaction_infos, component);
+        //
+        //         self.do_hard_verification(&restrict_infos).is_none()
+        //     }) {
+        //         None
+        //     } else {
+        //         Some(self.consistency_model)
+        //     }
+        // } else {
             self.do_hard_verification(&transaction_infos)
-        }
+        // }
     }
 
     fn restrict(
