@@ -80,7 +80,8 @@ impl Verifier {
         root_logger
     }
 
-    // write_map: HashMap<(variable, value), (session_id, i_transaction, i_event)>
+    // write_map: HashMap<(variable, value), (i_node, i_transaction, i_event)>, write_map is used to generate wr
+    // TODO: rename histories -> history?
     pub fn gen_write_map(histories: &[Session]) -> HashMap<(usize, usize), (usize, usize, usize)> {
         let mut write_map = HashMap::new();
 
@@ -88,6 +89,7 @@ impl Verifier {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 for (i_event, event) in transaction.events.iter().enumerate() {
                     if event.write {
+                        // TODO: why [i_node + 1]?
                         if write_map
                             .insert(
                                 (event.variable, event.value),
@@ -107,6 +109,7 @@ impl Verifier {
         write_map
     }
 
+    // TODO: rename histories -> history?
     pub fn verify(&mut self, histories: &[Session]) -> Option<Consistency> {
         let moment = std::time::Instant::now();
         let decision = self.transactional_history_verify(histories);
@@ -129,9 +132,11 @@ impl Verifier {
         decision
     }
 
+    // TODO: rename histories -> history?
     pub fn transactional_history_verify(&mut self, histories: &[Session]) -> Option<Consistency> {
         let write_map = Self::gen_write_map(histories);
 
+        // enumerate each read event
         for (i_node_r, session) in histories.iter().enumerate() {
             for (i_transaction_r, transaction) in session.iter().enumerate() {
                 if transaction.success {
@@ -145,6 +150,8 @@ impl Verifier {
                                     assert_eq!(i_transaction, 0);
                                     assert_eq!(i_event, 0);
                                 } else {
+                                    // transaction2 ->(wr) transaction
+                                    // TODO: [i_node - 1] beacuse [i_node + 1] in fn gen_write_map
                                     let transaction2 = &histories[i_node - 1][i_transaction];
                                     // let event2 = &transaction2.events[i_event];
                                     // info!(self.log,"{:?}\n{:?}", event, event2);
@@ -172,6 +179,8 @@ impl Verifier {
 
         // add code for serialization check
 
+        // the last write in each transaction
+        // transaction_last_writes: HashMAp<(i_node + 1, i_transaction), HashMap<event.variable, i_event>>
         let mut transaction_last_writes = HashMap::new();
 
         for (i_node, session) in histories.iter().enumerate() {
@@ -193,6 +202,7 @@ impl Verifier {
         for (i_node, session) in histories.iter().enumerate() {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 let mut writes = HashMap::new();
+                // reads: HashMap<event.variable, (wr_i_node, wr_i_transaction, wr_i_event)>
                 let mut reads: HashMap<usize, (usize, usize, usize)> = HashMap::new();
                 if transaction.success {
                     for (i_event, event) in transaction.events.iter().enumerate() {
@@ -200,11 +210,13 @@ impl Verifier {
                             if event.write {
                                 writes.insert(event.variable, i_event);
                                 reads.remove(&event.variable);
-                            } else {
+                            } else { // here event.write == false
+                                // wr_i_event ->(wr) event
                                 let &(wr_i_node, wr_i_transaction, wr_i_event) =
                                     write_map.get(&(event.variable, event.value)).unwrap();
                                 if let Some(pos) = writes.get(&event.variable) {
                                     // checking if read the last write in same transaction
+                                    // TODO: wr in the same txn is not allowed [Biswas 2019]; if allowed, what if the same txn but different events?
                                     if !((i_node + 1 == wr_i_node)
                                         && (i_transaction == wr_i_transaction)
                                         && (*pos == wr_i_event))
@@ -236,7 +248,8 @@ impl Verifier {
                                     if let Some((wr_i_node2, wr_i_transaction2, wr_i_event2)) =
                                         reads.get(&event.variable)
                                     {
-                                        // checking if the read the same write as the last read in same transaction
+                                        // checking if the read from the same write as the last read in same transaction
+                                        // TODO: Bug! wr_i_event is a write event but wr_i_event2 is a read event. If a txn has 2 read event, wrongly return here!
                                         if !((*wr_i_node2 == wr_i_node)
                                             && (*wr_i_transaction2 == wr_i_transaction)
                                             && (*wr_i_event2 == wr_i_event))
