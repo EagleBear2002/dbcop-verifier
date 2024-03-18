@@ -107,6 +107,7 @@ pub trait ConstrainedLinearization {
 
     fn children_of(&self, &Self::Vertex) -> Option<Vec<Self::Vertex>>;
 
+    // whether v can be extensions of linearization
     fn allow_next(&self, linearization: &[Self::Vertex], v: &Self::Vertex) -> bool;
 
     fn vertices(&self) -> Vec<Self::Vertex>;
@@ -176,7 +177,9 @@ pub trait ConstrainedLinearization {
     }
 
     fn get_linearization(&mut self) -> Option<Vec<Self::Vertex>> {
+        // vertice that can be border
         let mut non_det_choices: VecDeque<Self::Vertex> = Default::default();
+        // possible parent count
         let mut active_parent: HashMap<Self::Vertex, usize> = Default::default();
         let mut linearization: Vec<Self::Vertex> = Default::default();
         let mut seen: HashSet<BTreeSet<Self::Vertex>> = Default::default();
@@ -195,6 +198,7 @@ pub trait ConstrainedLinearization {
         }
 
         // take vertices with zero active_parent as non-det choices
+        // TODO: n and v should swap?
         active_parent.iter().for_each(|(n, v)| {
             if *v == 0 {
                 non_det_choices.push_back(n.clone());

@@ -1,0 +1,6 @@
+{"msg":"Application started","level":"INFO","ts":"2024-03-18T05:40:18.203624311Z","started_at":"2024-03-18 13:40:18.203434321 +08:00"}
+{"msg":"each read from latest write","level":"INFO","ts":"2024-03-18T05:40:18.204636223Z"}
+{"msg":"atomic reads","level":"INFO","ts":"2024-03-18T05:40:18.204931465Z"}
+{"msg":"atleast not read commmitted","level":"INFO","ts":"2024-03-18T05:40:18.205490873Z","number of transactions":"292"}
+{"msg":"using our algorithms","level":"INFO","ts":"2024-03-18T05:40:18.205868288Z"}
+{"msg":"the algorithm finished","level":"INFO","ts":"2024-03-18T05:40:18.869996632Z","minViolation":"Serializable","duration":0.66587796,"bicomponent":false,"sat":false,"model":"Serializable"}

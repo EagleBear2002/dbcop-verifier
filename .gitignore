@@ -135,3 +135,5 @@ Cargo.lock
 *.pdb
 
 # End of https://www.toptal.com/developers/gitignore/api/rust,jetbrains
+/output/
+/output/roachdb_general_partition_writes/

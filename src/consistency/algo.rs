@@ -5,7 +5,7 @@ use consistency::util::{ConstrainedLinearization, DiGraph};
 use slog::Logger;
 
 type TransactionId = (usize, usize);
-// TODO: type TransactionInfo = (HashMap<Variable, TransactionId>, Variable)
+// TODO: type TransactionInfo = (HashMap<Variable, TransactionId>, HashSet<Variable>)
 type TransactionInfo = (HashMap<usize, TransactionId>, HashSet<usize>);
 type Variable = usize;
 
@@ -167,6 +167,7 @@ impl ConstrainedLinearization for PrefixConsistentHistory {
 
     fn children_of(&self, u: &Self::Vertex) -> Option<Vec<Self::Vertex>> {
         if u.1 {
+            // return the set of v where u -> v
             self.history
                 .vis
                 .adj_map
@@ -405,6 +406,7 @@ impl ConstrainedLinearization for SerializableHistory {
     fn forward_book_keeping(&mut self, linearization: &[Self::Vertex]) {
         let curr_txn = linearization.last().unwrap();
         let curr_txn_info = self.history.txns_info.get(curr_txn).unwrap();
+        // TODO: why assert?
         for (&x, _) in curr_txn_info.0.iter() {
             assert!(self
                 .active_write
