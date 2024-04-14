@@ -110,15 +110,16 @@ impl Verifier {
     }
 
     // TODO: rename histories -> history?
-    pub fn verify(&mut self, histories: &[Session]) -> Option<Consistency> {
+    pub fn verify(&mut self, histories: &[Session], status:&mut i32) -> Option<Consistency> {
         let moment = std::time::Instant::now();
-        let decision = self.transactional_history_verify(histories);
+        let decision = self.transactional_history_verify(histories, status);
         let duration = moment.elapsed();
 
         info!(
             self.log,
             #"information",
             "the algorithm finished";
+                "number_of_status" => format!("{:?}", status),
                 "model" => format!("{:?}", self.consistency_model),
                 "sat" => self.use_sat,
                 "bicomponent" => self.use_bicomponent,
@@ -129,11 +130,14 @@ impl Verifier {
                 },
         );
 
+        // println!("number_of_status = {}", status);
+        // info!(self.log, "information"; "number_of_status" => format!("{:?}", status));
+
         decision
     }
 
     // TODO: rename histories -> history?
-    pub fn transactional_history_verify(&mut self, histories: &[Session]) -> Option<Consistency> {
+    pub fn transactional_history_verify(&mut self, histories: &[Session], status:&mut i32) -> Option<Consistency> {
         let write_map = Self::gen_write_map(histories);
 
         // enumerate each read event
@@ -389,7 +393,7 @@ impl Verifier {
         //         Some(self.consistency_model)
         //     }
         // } else {
-            self.do_hard_verification(&transaction_infos)
+            self.do_hard_verification(&transaction_infos, status)
         // }
     }
 
@@ -418,6 +422,7 @@ impl Verifier {
             (usize, usize),
             (HashMap<usize, (usize, usize)>, HashSet<usize>),
         >,
+        status:&mut i32
     ) -> Option<Consistency> {
         // if self.use_sat {
         //     let mut sat_solver = Sat::new(&transaction_infos);
@@ -505,7 +510,7 @@ impl Verifier {
                     if pre_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)
                     } else {
-                        if pre_hist.get_linearization().is_some() {
+                        if pre_hist.get_linearization(status).is_some() {
                             None
                         } else {
                             Some(self.consistency_model)
@@ -528,7 +533,7 @@ impl Verifier {
                     if si_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)
                     } else {
-                        if si_hist.get_linearization().is_some() {
+                        if si_hist.get_linearization(status).is_some() {
                             None
                         } else {
                             Some(self.consistency_model)
@@ -567,7 +572,7 @@ impl Verifier {
                     if ser_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)
                     } else {
-                        // let lin_o = ser_hist.get_linearization();
+                        // let lin_o = ser_hist.get_linearization(status);
                         // {
                         //     // checking correctness
                         //     if let Some(ref lin) = lin_o {
@@ -595,7 +600,7 @@ impl Verifier {
                         // lin_o.is_some();
 
                         now = std::time::Instant::now();
-                        if ser_hist.get_linearization().is_some() {
+                        if ser_hist.get_linearization(status).is_some() {
                             // println!("dbcop main algorithm took {}secs", now.elapsed().as_secs());
                             None
                         } else {
@@ -605,27 +610,27 @@ impl Verifier {
                 }
                 Consistency::Inc => {
                     self.consistency_model = Consistency::ReadAtomic;
-                    let decision = self.do_hard_verification(transaction_infos);
+                    let decision = self.do_hard_verification(transaction_infos, status);
                     if decision.is_some() {
                         return decision;
                     }
                     self.consistency_model = Consistency::Causal;
-                    let decision = self.do_hard_verification(transaction_infos);
+                    let decision = self.do_hard_verification(transaction_infos, status);
                     if decision.is_some() {
                         return decision;
                     }
                     self.consistency_model = Consistency::Prefix;
-                    let decision = self.do_hard_verification(transaction_infos);
+                    let decision = self.do_hard_verification(transaction_infos, status);
                     if decision.is_some() {
                         return decision;
                     }
                     self.consistency_model = Consistency::SnapshotIsolation;
-                    let decision = self.do_hard_verification(transaction_infos);
+                    let decision = self.do_hard_verification(transaction_infos, status);
                     if decision.is_some() {
                         return decision;
                     }
                     self.consistency_model = Consistency::Serializable;
-                    let decision = self.do_hard_verification(transaction_infos);
+                    let decision = self.do_hard_verification(transaction_infos, status);
                     if decision.is_some() {
                         return decision;
                     }

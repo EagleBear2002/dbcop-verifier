@@ -7,6 +7,10 @@ use std::collections::{HashMap, HashSet};
 use std::collections::VecDeque;
 
 use std::collections::BTreeSet;
+use std::fs::File;
+use std::path::{Path, PathBuf};
+use consistency::Consistency;
+use verifier::Verifier;
 
 // Directed Graph
 #[derive(Default, Debug, Clone)]
@@ -176,7 +180,7 @@ pub trait ConstrainedLinearization {
         }
     }
 
-    fn get_linearization(&mut self) -> Option<Vec<Self::Vertex>> {
+    fn get_linearization(&mut self, status: &mut i32) -> Option<Vec<Self::Vertex>> {
         // vertice that can be border
         let mut non_det_choices: VecDeque<Self::Vertex> = Default::default();
         // possible parent count
@@ -211,6 +215,16 @@ pub trait ConstrainedLinearization {
             &mut linearization,
             &mut seen,
         );
+
+        // let dir = PathBuf::from("results-status-cnt");
+        // let log_file = File::create(dir.join("count_of_status.json")).unwrap();
+
+        *status = seen.len() as i32;
+        println!("cnt of status = {}", seen.len());
+        // info!(log_file,
+        //     #"information",
+        //     "cnt of status" => seen.len()
+        // );
 
         if linearization.is_empty() {
             None

@@ -61,10 +61,10 @@ Consistency_.
 
 ### Test Performance
 
-We provide a python script `scripts/test-from-excution.py` to test. You can edit it for other excutions.
+We provide a python script `script/test-from-excution.py` to test. You can edit it for other excutions.
 
 ```sh
-python3 scripts/test-from-excution.py
+python3 script/test-from-excution.py
 ```
 
 ### Code Structure

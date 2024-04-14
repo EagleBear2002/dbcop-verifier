@@ -13,10 +13,10 @@ root_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 dbcop_path = os.path.join(root_path, 'target', 'release', 'dbcop')
 
 # history_dir_name = 'roachdb_general_all_writes' 
-history_dir_name = 'roachdb_general_partition_writes' 
+history_dir_name = 'roachdb_general_partition_writes'
 history_dir = os.path.join(root_path, 'excutions', history_dir_name)
 
-output_dir = os.path.join(root_path, 'results', history_dir_name)
+output_dir = os.path.join(root_path, 'results-status-cnt', history_dir_name)
 reset_dir(output_dir)
 
 for hist in os.listdir(history_dir):
