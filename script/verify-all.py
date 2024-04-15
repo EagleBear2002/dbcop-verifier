@@ -22,15 +22,15 @@ history_dir_names = [
 ]
 
 def verify_history_dir(history_dir_name):
-  history_dir = os.path.join(project_path, 'excutions', history_dir_name)
+  history_dir = os.path.join(project_path, 'excutions', history_dir_name) # eg. antidote_all_writes
 
   output_dir = os.path.join(project_path, 'results-status-cnt', history_dir_name)
   reset_dir(output_dir)
 
-  for hist in os.listdir(history_dir):
+  for hist in os.listdir(history_dir): # eg. 3_30_20_180
     hist_out_dir = os.path.join(output_dir, hist)
     reset_dir(hist_out_dir)
-    for spec_hist in os.listdir(os.path.join(history_dir, hist)):
+    for spec_hist in os.listdir(os.path.join(history_dir, hist)): # eg. hist-00000
       out_dir = os.path.join(hist_out_dir, spec_hist)
       reset_dir(out_dir)
       print(out_dir)
