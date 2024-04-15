@@ -16,9 +16,10 @@ history_dir_names = [
   # 'galera_all_writes',
   # 'galera_partition_writes',
   # 'roachdb_all_writes',
-  'roachdb_general_all_writes',
-  'roachdb_general_partition_writes',
-  'roachdb_partition_writes'
+  # 'roachdb_general_all_writes',
+  # 'roachdb_general_partition_writes',
+  # 'roachdb_partition_writes',
+  'diy_excutions',
 ]
 
 def verify_history_dir(history_dir_name):
