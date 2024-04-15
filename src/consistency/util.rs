@@ -216,15 +216,8 @@ pub trait ConstrainedLinearization {
             &mut seen,
         );
 
-        // let dir = PathBuf::from("results-status-cnt");
-        // let log_file = File::create(dir.join("count_of_status.json")).unwrap();
-
         *status = seen.len() as i32;
-        println!("cnt of status = {}", seen.len());
-        // info!(log_file,
-        //     #"information",
-        //     "cnt of status" => seen.len()
-        // );
+        // println!("cnt of status = {}", seen.len());
 
         if linearization.is_empty() {
             None
