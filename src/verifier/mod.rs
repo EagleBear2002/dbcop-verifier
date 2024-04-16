@@ -549,25 +549,29 @@ impl Verifier {
                     let mut change = false;
                     // wsc code
                     let mut now = std::time::Instant::now();
-                    // println!("wsc start");
+                    println!("wsc start");
                     loop {
+                        // println!("begin iteration");
                         change |= ser_hist.history.vis_is_trans();
                         if !change {
                             break;
                         } else {
                             change = false;
                         }
+                        // println!("begin add ww");
                         let ww = ser_hist.history.causal_ww();
                         for (_, ww_x) in ww.iter() {
                             change |= ser_hist.history.vis_includes(ww_x);
                         }
+                        // println!("begin add rw");
                         let rw = ser_hist.history.causal_rw();
                         for (_, rw_x) in rw.iter() {
                             change |= ser_hist.history.vis_includes(rw_x);
                         }
+                        // println!("end iteration");
                     }
-                    // println!("wsc end");
-                    // println!("wsc took {}secs", now.elapsed().as_secs());
+                    println!("wsc end");
+                    println!("wsc took {}secs", now.elapsed().as_secs());
 
                     if ser_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)

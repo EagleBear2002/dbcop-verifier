@@ -77,15 +77,19 @@ impl AtomicHistoryPO {
         self.vis.union_with(g)
     }
 
-    // check if vis relation is transitive(can be closured). If is, clusure
+    // check if vis relation is transitive(can be closured). If is, closure
     pub fn vis_is_trans(&mut self) -> bool {
+        // println!("begin vis_is_trans");
+        // println!("begin take_closure");
         let closure = self.vis.take_closure();
+        // println!("begin change");
         let change = self
             .vis
             .adj_map
             .iter()
             .any(|(k, v)| closure.adj_map.get(k).unwrap().difference(v).count() > 0);
         self.vis = closure;
+        // println!("change = {}", change);
         change
     }
 
