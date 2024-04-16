@@ -11,7 +11,7 @@ use db::history::Session;
 use consistency::algo::{
     AtomicHistoryPO, PrefixConsistentHistory, SerializableHistory, SnapshotIsolationHistory,
 };
-use consistency::util::ConstrainedLinearization;
+use consistency::util::{ConstrainedLinearization, upd_reachable};
 
 // mod util;
 
@@ -546,12 +546,27 @@ impl Verifier {
 
                     let wr = ser_hist.history.get_wr();
                     ser_hist.history.vis_includes(&wr);
+                    unsafe { println!("edge_count0 = {}", crate::consistency::util::edge_count); }
+
+                    let ww = ser_hist.history.causal_ww();
+                    for (_, ww_x) in ww.iter() {
+                        ser_hist.history.vis_includes(ww_x);
+                    }
+                    let rw = ser_hist.history.causal_rw();
+                    for (_, rw_x) in rw.iter() {
+                        ser_hist.history.vis_includes(rw_x);
+                    }
+
+                    ser_hist.history.vis.init_reachable();
+                    unsafe { upd_reachable = true; }
+                    unsafe { println!("dfs_count1 = {}", crate::consistency::util::dfs_count); }
+                    unsafe { println!("edge_count = {}", crate::consistency::util::edge_count); }
+
                     let mut change = false;
                     // wsc code
                     let mut now = std::time::Instant::now();
                     println!("wsc start");
                     loop {
-                        // println!("begin iteration");
                         change |= ser_hist.history.vis_is_trans();
                         if !change {
                             break;
@@ -568,6 +583,8 @@ impl Verifier {
                         for (_, rw_x) in rw.iter() {
                             change |= ser_hist.history.vis_includes(rw_x);
                         }
+                        unsafe { println!("dfs_count2 = {}", crate::consistency::util::dfs_count); }
+                        unsafe { println!("edge_count2 = {}", crate::consistency::util::edge_count); }
                         // println!("end iteration");
                     }
                     println!("wsc end");
@@ -605,7 +622,7 @@ impl Verifier {
 
                         now = std::time::Instant::now();
                         if ser_hist.get_linearization(status).is_some() {
-                            // println!("dbcop main algorithm took {}secs", now.elapsed().as_secs());
+                            println!("dbcop main algorithm took {}secs", now.elapsed().as_secs());
                             None
                         } else {
                             Some(self.consistency_model)

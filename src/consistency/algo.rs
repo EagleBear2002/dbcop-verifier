@@ -29,10 +29,11 @@ impl AtomicHistoryPO {
             transactions.sort_unstable();
 
             for ts in transactions.windows(2) {
-                so.add_edge(if ts[0].0 == ts[1].0 { ts[0] } else { (0, 0) }, ts[1])
+                so.add_edge(if ts[0].0 == ts[1].0 { ts[0] } else { (0, 0) }, ts[1]);
             }
         }
 
+        // TODO: this take_closure make no difference
         so.take_closure();
 
         let mut wr_rel: HashMap<Variable, DiGraph<TransactionId>> = Default::default();
@@ -81,13 +82,19 @@ impl AtomicHistoryPO {
     pub fn vis_is_trans(&mut self) -> bool {
         // println!("begin vis_is_trans");
         // println!("begin take_closure");
-        let closure = self.vis.take_closure();
+        let mut closure = self.vis.take_closure();
         // println!("begin change");
         let change = self
             .vis
             .adj_map
             .iter()
-            .any(|(k, v)| closure.adj_map.get(k).unwrap().difference(v).count() > 0);
+            // .any(|(k, v)| closure.adj_map.get(k).unwrap().difference(v).count() > 0);
+            .any(|(&k, v)|
+                closure.adj_map.
+                    entry(k)
+                    .or_insert_with(HashSet::new)
+                    .difference(v)
+                    .count() > 0);
         self.vis = closure;
         // println!("change = {}", change);
         change

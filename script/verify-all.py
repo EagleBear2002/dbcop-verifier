@@ -25,7 +25,7 @@ history_dir_names = [
 def verify_history_dir(history_dir_name):
   history_dir = os.path.join(project_path, 'excutions', history_dir_name) # eg. antidote_all_writes
 
-  output_dir = os.path.join(project_path, 'results-status-cnt', history_dir_name)
+  output_dir = os.path.join(project_path, 'results-status-cnt-improved', history_dir_name)
   reset_dir(output_dir)
 
   for hist in os.listdir(history_dir): # eg. 3_30_20_180

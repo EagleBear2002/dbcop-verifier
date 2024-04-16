@@ -15,62 +15,96 @@ use verifier::Verifier;
 // Directed Graph
 #[derive(Default, Debug, Clone)]
 pub struct DiGraph<T>
-where
-    T: Hash + Eq + Copy + Debug,
+    where
+        T: Hash + Eq + Copy + Debug,
 {
     pub adj_map: HashMap<T, HashSet<T>>,
     pub rev_adj_map: HashMap<T, HashSet<T>>,
     pub reachable: HashMap<T, HashSet<T>>,
 }
 
+pub static mut upd_reachable: bool = false;
+
 impl<T> DiGraph<T>
-where
-    T: Hash + Eq + Copy + Debug,
+    where
+        T: Hash + Eq + Copy + Debug,
 {
+    pub fn init_reachable(&mut self) {
+        let us: Vec<T> = self.adj_map.keys().cloned().collect();
+        for u in us {
+            self.dfs_init_reachable(u);
+        }
+    }
+
+    pub fn dfs_init_reachable(&mut self, u: T) {
+        if !self.reachable.get(&u).is_none() || self.reachable.get(&u).iter().count() > 0 {
+            return;
+        }
+
+        // u -> v
+        // let vs = self.adj_map.entry(u).or_insert_with(HashSet::new).clone();
+        if let Some(vs) = self.adj_map.get(&u).cloned() {
+            unsafe { dfs_count += 1; }
+            for &v in vs.iter() {
+                self.dfs_init_reachable(v);
+                self.reachable.entry(u).or_insert_with(HashSet::new).insert(v);
+
+                let rs = self.reachable.entry(u).or_insert_with(HashSet::new).clone();
+                let entry = self.reachable.entry(u).or_insert_with(HashSet::new);
+                for &r in rs.iter() {
+                    entry.insert(r);
+                }
+            }
+        }
+    }
+
     // upd reachable[u] with reachable[v]
     pub fn dfs_upd_reachable(&mut self, u: T, v: T) {
         let mut change = false;
-
-        // println!("change0");
 
         let rs = self.reachable.entry(v).or_insert_with(HashSet::new).clone();
         let entry = self.reachable.entry(u).or_insert_with(HashSet::new);
 
         if (entry.insert(v)) {
             change = true;
-            // println!("change1");
         }
 
         // r is reachable for v
         for &r in rs.iter() {
+            // println!("dfs_coutnt += 1");
+            unsafe { dfs_count += 1; }
             if (entry.insert(r)) {
                 change = true;
-                // println!("change2");
             }
         }
 
         if !change {
-            // println!("return!!!!!!!!!!!1");
             return;
         }
 
         // w -> u
-        let ws =  self.rev_adj_map.entry(u).or_insert_with(HashSet::new).clone();
+        let ws = self.rev_adj_map.entry(u).or_insert_with(HashSet::new).clone();
         for &w in ws.iter() {
             // println!("dfs_upd_reachable above!");
             self.dfs_upd_reachable(w, v);
         }
     }
 
-    pub fn add_edge(&mut self, u: T, v: T) {
-        if (!self.adj_map.entry(u).or_insert_with(HashSet::new).contains(&v)) {
-            self.adj_map.entry(u).or_insert_with(HashSet::new).insert(v);
-            self.rev_adj_map.entry(v).or_insert_with(HashSet::new).insert(u);
-            self.dfs_upd_reachable(u, v);
-            // return true;
+    pub fn add_edge(&mut self, u: T, v: T) -> bool {
+        if self.adj_map.entry(u).or_insert_with(HashSet::new).contains(&v) {
+            return false;
         }
 
-        // return false;
+        unsafe { edge_count += 1; }
+        self.adj_map.entry(u).or_insert_with(HashSet::new).insert(v);
+        self.rev_adj_map.entry(v).or_insert_with(HashSet::new).insert(u);
+        unsafe {
+            if (upd_reachable) {
+                // println!("call dfs_upd_reachable");
+                self.dfs_upd_reachable(u, v);
+            }
+        }
+        return true;
     }
 
     pub fn add_edges(&mut self, u: T, vs: &[T]) {
@@ -119,7 +153,7 @@ where
         if let Some(vs) = self.adj_map.get(u) {
             for &v in vs.iter() {
                 if reachable.insert(v) {
-                    unsafe { dfs_count += 1; }
+                    // unsafe { dfs_count += 1; }
                     self.dfs_util_all(&v, reachable);
                 }
             }
@@ -129,18 +163,19 @@ where
     // connect reachable pairs directly
     // O(n^2)
     // TODO: Memorized reachable for Search!
-    pub fn take_closure(&self) -> Self {
+    pub fn take_closure(&mut self) -> Self {
         DiGraph {
-            adj_map: self
-                .adj_map
-                .keys()
-                .map(|&u| {
-                    let mut reachable: HashSet<T> = Default::default();
-                    self.dfs_util_all(&u, &mut reachable);
-                    (u, reachable)
-                })
-                .collect(),
-            // adj_map: self.reachable.clone(),
+            // adj_map: self
+            //     .adj_map
+            //     .keys()
+            //     .map(|&u| {
+            //         let mut reachable: HashSet<T> = Default::default();
+            //         self.dfs_util_all(&u, &mut reachable);
+            //         // unsafe { dfs_count += 1; }
+            //         (u, reachable)
+            //     })
+            //     .collect(),
+            adj_map: self.reachable.clone(),
             rev_adj_map: self.rev_adj_map.clone(),
             reachable: self.reachable.clone(),
         }
@@ -153,24 +188,22 @@ where
         for (&u, vs) in g.adj_map.iter() {
             let entry = self.adj_map.entry(u).or_insert_with(Default::default);
             for &v in vs.iter() {
-                // let pre_change = change;
-                // TODO: find bug here!
+                // TODO: fixed bug here!
                 // change = entry.insert(v);
-                change |= entry.insert(v);
-                // if (pre_change && !change) {
-                    // println!("change reset to {}", change);
-                    // bug = true;
-                // }
+                // change |= entry.insert(v);
+
+                change |= self.add_edge(u, v);
             }
         }
         // if (bug) {
-            // println!("end loop at change = {}", change);
+        // println!("end loop at change = {}", change);
         // }
         change
     }
 }
 
-static mut dfs_count:i32 = 0;
+pub(crate) static mut dfs_count: i32 = 0;
+pub(crate) static mut edge_count: i32 = 0;
 
 pub trait ConstrainedLinearization {
     type Vertex: Hash + Eq + Copy + Ord + Debug;
@@ -196,7 +229,6 @@ pub trait ConstrainedLinearization {
         // seen: &mut HashSet<Map<>>,
     ) -> bool {
         // println!("explored {}", seen.len());
-        unsafe { dfs_count += 1; }
         // unsafe { println!("dfs_count = {}", dfs_count); }
         if !seen.insert(non_det_choices.iter().cloned().collect()) {
             // seen is not modified
@@ -252,7 +284,6 @@ pub trait ConstrainedLinearization {
     }
 
     fn get_linearization(&mut self, status: &mut i32) -> Option<Vec<Self::Vertex>> {
-
         println!("begin get_linearization");
 
         // vertice that can be border
@@ -293,7 +324,7 @@ pub trait ConstrainedLinearization {
         );
 
         *status = seen.len() as i32;
-        unsafe { println!("dfs count = {}", dfs_count); }
+        unsafe { println!("dfs_count final = {}", dfs_count); }
         println!("cnt of status = {}", seen.len());
 
         if linearization.is_empty() {
