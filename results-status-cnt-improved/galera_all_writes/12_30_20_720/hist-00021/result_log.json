@@ -1,0 +1,3 @@
+{"msg":"Application started","level":"INFO","ts":"2024-04-16T12:27:31.33660007Z","started_at":"2024-04-16 20:27:31.336476293 +08:00"}
+{"msg":"finished early","level":"INFO","ts":"2024-04-16T12:27:31.337532744Z","description":"did not read same as latest read which is after lastest write","reason":"NON REPEATABLE READ"}
+{"msg":"the algorithm finished","level":"INFO","ts":"2024-04-16T12:27:31.337859171Z","minViolation":"RepeatableRead","duration":0.001002401,"bicomponent":false,"sat":false,"model":"Serializable","number_of_status":"0"}

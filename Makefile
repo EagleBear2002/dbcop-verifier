@@ -7,4 +7,4 @@ test: build
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_15_15_1000/hist-00000 -o ./results -c ser
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/10_45_15_1000/hist-00000 -o ./results -c ser
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_100_15_1000/hist-00000 -o ./results -c ser
-	./target/release/dbcop verify -d ./excutions/diy_excutions/15_200_15_1000/hist-00000 -o ./results -c ser
+	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_200_15_1000/hist-00000 -o ./results -c ser

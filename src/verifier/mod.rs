@@ -548,15 +548,6 @@ impl Verifier {
                     ser_hist.history.vis_includes(&wr);
                     unsafe { println!("edge_count0 = {}", crate::consistency::util::edge_count); }
 
-                    let ww = ser_hist.history.causal_ww();
-                    for (_, ww_x) in ww.iter() {
-                        ser_hist.history.vis_includes(ww_x);
-                    }
-                    let rw = ser_hist.history.causal_rw();
-                    for (_, rw_x) in rw.iter() {
-                        ser_hist.history.vis_includes(rw_x);
-                    }
-
                     ser_hist.history.vis.init_reachable();
                     unsafe { upd_reachable = true; }
                     unsafe { println!("dfs_count1 = {}", crate::consistency::util::dfs_count); }
