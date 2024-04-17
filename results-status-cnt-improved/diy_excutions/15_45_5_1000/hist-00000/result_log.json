@@ -1,5 +1,0 @@
-{"msg":"Application started","level":"INFO","ts":"2024-04-16T12:45:19.854186123Z","started_at":"2024-04-16 20:45:19.854062354 +08:00"}
-{"msg":"each read from latest write","level":"INFO","ts":"2024-04-16T12:45:19.854824356Z"}
-{"msg":"atomic reads","level":"INFO","ts":"2024-04-16T12:45:19.855009505Z"}
-{"msg":"atleast not read commmitted","level":"INFO","ts":"2024-04-16T12:45:19.855398742Z","number of transactions":"676"}
-{"msg":"using our algorithms","level":"INFO","ts":"2024-04-16T12:45:19.85564048Z"}
