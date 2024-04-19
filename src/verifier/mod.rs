@@ -114,6 +114,7 @@ impl Verifier {
         let moment = std::time::Instant::now();
         let decision = self.transactional_history_verify(histories, status);
         let duration = moment.elapsed();
+        let time_duration = duration.as_secs() as f64 + f64::from(duration.subsec_nanos()) * 1e-9;
 
         info!(
             self.log,
@@ -123,15 +124,14 @@ impl Verifier {
                 "model" => format!("{:?}", self.consistency_model),
                 "sat" => self.use_sat,
                 "bicomponent" => self.use_bicomponent,
-                "duration" => duration.as_secs() as f64 + f64::from(duration.subsec_nanos()) * 1e-9,
+                "duration" => time_duration,
                 "minViolation" => match decision {
                     Some(e) => format!("{:?}",e),
                     None => format!("ok")
                 },
         );
 
-        // println!("number_of_status = {}", status);
-        // info!(self.log, "information"; "number_of_status" => format!("{:?}", status));
+        println!("duration = {}", time_duration);
 
         decision
     }

@@ -8,4 +8,9 @@ test: build
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/10_45_15_1000/hist-00000 -o ./results -c ser
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_100_15_1000/hist-00000 -o ./results -c ser
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_200_15_1000/hist-00000 -o ./results -c ser
+	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_300_15_1000/hist-00000 -o ./results -c ser
 	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_400_15_1000/hist-00000 -o ./results -c ser
+	#./target/release/dbcop verify -d ./excutions/diy_excutions/15_700_15_1000/hist-00000 -o ./results -c ser
+
+	# bug here
+	#./target/release/dbcop verify -d ./excutions/diy_excutions-15_45_5_1000/hist-00000 -o ./results -c ser
