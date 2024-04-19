@@ -11,7 +11,7 @@ use db::history::Session;
 use consistency::algo::{
     AtomicHistoryPO, PrefixConsistentHistory, SerializableHistory, SnapshotIsolationHistory,
 };
-use consistency::util::{ConstrainedLinearization, upd_reachable};
+use consistency::util::{ConstrainedLinearization};
 
 // mod util;
 
@@ -24,7 +24,7 @@ pub struct Verifier {
     consistency_model: Consistency,
     use_sat: bool,
     use_bicomponent: bool,
-    dir: PathBuf,
+    // dir: PathBuf,
 }
 
 impl Verifier {
@@ -37,7 +37,7 @@ impl Verifier {
             consistency_model: Consistency::Serializable,
             use_sat: false,
             use_bicomponent: false,
-            dir,
+            // dir,
         }
     }
 
@@ -392,24 +392,24 @@ impl Verifier {
         // }
     }
 
-    fn restrict(
-        &self,
-        transaction_infos: &HashMap<
-            (usize, usize),
-            (HashMap<usize, (usize, usize)>, HashSet<usize>),
-        >,
-        component: &HashSet<usize>,
-    ) -> HashMap<(usize, usize), (HashMap<usize, (usize, usize)>, HashSet<usize>)> {
-        let mut new_info = transaction_infos.clone();
-
-        new_info.retain(|k, _| component.contains(&k.0));
-
-        new_info
-            .values_mut()
-            .for_each(|(read_info, _)| read_info.retain(|_, k| component.contains(&k.0)));
-
-        new_info
-    }
+    // fn restrict(
+    //     &self,
+    //     transaction_infos: &HashMap<
+    //         (usize, usize),
+    //         (HashMap<usize, (usize, usize)>, HashSet<usize>),
+    //     >,
+    //     component: &HashSet<usize>,
+    // ) -> HashMap<(usize, usize), (HashMap<usize, (usize, usize)>, HashSet<usize>)> {
+    //     let mut new_info = transaction_infos.clone();
+    //
+    //     new_info.retain(|k, _| component.contains(&k.0));
+    //
+    //     new_info
+    //         .values_mut()
+    //         .for_each(|(read_info, _)| read_info.retain(|_, k| component.contains(&k.0)));
+    //
+    //     new_info
+    // }
 
     fn do_hard_verification(
         &mut self,
@@ -541,12 +541,12 @@ impl Verifier {
 
                     let wr = ser_hist.history.get_wr();
                     ser_hist.history.vis_includes(&wr);
-                    unsafe { println!("edge_count0 = {}", crate::consistency::util::edge_count); }
+                    unsafe { println!("edge_count0 = {}", crate::consistency::util::EDGE_COUNT); }
 
                     ser_hist.history.vis.init_reachable();
-                    unsafe { upd_reachable = true; }
-                    unsafe { println!("dfs_count1 = {}", crate::consistency::util::dfs_count); }
-                    unsafe { println!("edge_count = {}", crate::consistency::util::edge_count); }
+                    ser_hist.history.vis.upd_reachable = true;
+                    unsafe { println!("dfs_count1 = {}", crate::consistency::util::DFS_COUNT); }
+                    unsafe { println!("edge_count = {}", crate::consistency::util::EDGE_COUNT); }
 
                     let mut change = false;
                     // wsc code
@@ -569,13 +569,12 @@ impl Verifier {
                         for (_, rw_x) in rw.iter() {
                             change |= ser_hist.history.vis_includes(rw_x);
                         }
-                        unsafe { println!("dfs_count2 = {}", crate::consistency::util::dfs_count); }
-                        unsafe { println!("edge_count2 = {}", crate::consistency::util::edge_count); }
+                        unsafe { println!("dfs_count2 = {}", crate::consistency::util::DFS_COUNT); }
+                        unsafe { println!("edge_count2 = {}", crate::consistency::util::EDGE_COUNT); }
                         // println!("end iteration");
                     }
                     println!("wsc end");
                     println!("wsc took {}secs", now.elapsed().as_secs());
-                    unsafe { upd_reachable = false; }
 
                     if ser_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use consistency::util::{ConstrainedLinearization, DiGraph, upd_reachable};
+use consistency::util::{ConstrainedLinearization, DiGraph};
 
 use slog::Logger;
 
@@ -34,9 +34,8 @@ impl AtomicHistoryPO {
 
         // TODO: this take_closure make no difference
         // so.init_reachable();
-        // unsafe { upd_reachable = true; }
+        // so.upd_reachable = true;
         // so = so.take_closure();
-
 
         let mut wr_rel: HashMap<Variable, DiGraph<TransactionId>> = Default::default();
 

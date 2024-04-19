@@ -13,13 +13,13 @@ project_path = os.path.join('.')
 dbcop_path = os.path.join(project_path, 'target', 'release', 'dbcop')
 excutions_dir_names = [
   'antidote_all_writes',
-  'galera_all_writes',
-  'galera_partition_writes',
-  'roachdb_all_writes',
-  'roachdb_general_all_writes',
-  'roachdb_general_partition_writes',
-  'roachdb_partition_writes',
-  'diy_excutions',
+  # 'galera_all_writes',
+  # 'galera_partition_writes',
+  # 'roachdb_all_writes',
+  # 'roachdb_general_all_writes',
+  # 'roachdb_general_partition_writes',
+  # 'roachdb_partition_writes',
+  # 'diy_excutions',
 ]
 
 def verify_history_dir(excutions_dir_name):

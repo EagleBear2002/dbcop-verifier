@@ -7,10 +7,6 @@ use std::collections::{HashMap, HashSet};
 use std::collections::VecDeque;
 
 use std::collections::BTreeSet;
-use std::fs::File;
-use std::path::{Path, PathBuf};
-use consistency::Consistency;
-use verifier::Verifier;
 
 // Directed Graph
 #[derive(Default, Debug, Clone)]
@@ -21,9 +17,9 @@ pub struct DiGraph<T>
     pub adj_map: HashMap<T, HashSet<T>>,
     pub rev_adj_map: HashMap<T, HashSet<T>>,
     pub reachable: HashMap<T, HashSet<T>>,
+    pub upd_reachable: bool,
 }
 
-pub static mut upd_reachable: bool = false;
 
 impl<T> DiGraph<T>
     where
@@ -44,7 +40,7 @@ impl<T> DiGraph<T>
         // u -> v
         // let vs = self.adj_map.entry(u).or_insert_with(HashSet::new).clone();
         if let Some(vs) = self.adj_map.get(&u).cloned() {
-            unsafe { dfs_count += 1; }
+            unsafe { DFS_COUNT += 1; }
             for &v in vs.iter() {
                 self.dfs_init_reachable(v);
                 self.reachable.entry(u).or_insert_with(HashSet::new).insert(v);
@@ -65,15 +61,15 @@ impl<T> DiGraph<T>
         let rs = self.reachable.entry(v).or_insert_with(HashSet::new).clone();
         let entry = self.reachable.entry(u).or_insert_with(HashSet::new);
 
-        if (entry.insert(v)) {
+        if entry.insert(v) {
             change = true;
         }
 
         // r is reachable for v
         for &r in rs.iter() {
             // println!("dfs_coutnt += 1");
-            unsafe { dfs_count += 1; }
-            if (entry.insert(r)) {
+            unsafe { DFS_COUNT += 1; }
+            if entry.insert(r) {
                 change = true;
             }
         }
@@ -95,14 +91,11 @@ impl<T> DiGraph<T>
             return false;
         }
 
-        unsafe { edge_count += 1; }
+        unsafe { EDGE_COUNT += 1; }
         self.adj_map.entry(u).or_insert_with(HashSet::new).insert(v);
         self.rev_adj_map.entry(v).or_insert_with(HashSet::new).insert(u);
-        unsafe {
-            if (upd_reachable) {
-                // println!("call dfs_upd_reachable");
-                self.dfs_upd_reachable(u, v);
-            }
+        if self.upd_reachable {
+            self.dfs_upd_reachable(u, v);
         }
         return true;
     }
@@ -149,16 +142,16 @@ impl<T> DiGraph<T>
     }
 
     // O(n)
-    fn dfs_util_all(&self, u: &T, reachable: &mut HashSet<T>) {
-        if let Some(vs) = self.adj_map.get(u) {
-            for &v in vs.iter() {
-                if reachable.insert(v) {
-                    // unsafe { dfs_count += 1; }
-                    self.dfs_util_all(&v, reachable);
-                }
-            }
-        }
-    }
+    // fn dfs_util_all(&self, u: &T, reachable: &mut HashSet<T>) {
+    //     if let Some(vs) = self.adj_map.get(u) {
+    //         for &v in vs.iter() {
+    //             if reachable.insert(v) {
+    //                 // unsafe { dfs_count += 1; }
+    //                 self.dfs_util_all(&v, reachable);
+    //             }
+    //         }
+    //     }
+    // }
 
     // connect reachable pairs directly
     // O(n^2)
@@ -178,32 +171,24 @@ impl<T> DiGraph<T>
             adj_map: self.reachable.clone(),
             rev_adj_map: self.rev_adj_map.clone(),
             reachable: self.reachable.clone(),
+            upd_reachable: false,
         }
     }
 
     pub fn union_with(&mut self, g: &Self) -> bool {
         let mut change = false;
         // println!("begin loop");
-        // let mut bug = false;
         for (&u, vs) in g.adj_map.iter() {
-            let entry = self.adj_map.entry(u).or_insert_with(Default::default);
             for &v in vs.iter() {
-                // TODO: fixed bug here!
-                // change = entry.insert(v);
-                // change |= entry.insert(v);
-
                 change |= self.add_edge(u, v);
             }
         }
-        // if (bug) {
-        // println!("end loop at change = {}", change);
-        // }
         change
     }
 }
 
-pub(crate) static mut dfs_count: i32 = 0;
-pub(crate) static mut edge_count: i32 = 0;
+pub(crate) static mut DFS_COUNT: i32 = 0;
+pub(crate) static mut EDGE_COUNT: i32 = 0;
 
 pub trait ConstrainedLinearization {
     type Vertex: Hash + Eq + Copy + Ord + Debug;
@@ -324,7 +309,7 @@ pub trait ConstrainedLinearization {
         );
 
         *status = seen.len() as i32;
-        unsafe { println!("dfs_count final = {}", dfs_count); }
+        unsafe { println!("dfs_count final = {}", DFS_COUNT); }
         println!("cnt of status = {}", seen.len());
 
         if linearization.is_empty() {

@@ -28,7 +28,7 @@ def check_min_violation(directory1, directory2):
                     min_violation2 = json_data2.get('minViolation')
 
                     if min_violation1 == min_violation2:
-                        print(f"Min violation for {file} is the same: {min_violation1}")
+                        print(f"Min violation for {root}/{file} is the same: {min_violation1}")
                     else:
                         all_pass = false
                         print("Different:")
@@ -42,8 +42,8 @@ def check_min_violation(directory1, directory2):
 project_path = os.path.join('.')
 
 # target log path
-directory1 = os.path.join(project_path, 'results', 'results-status-cnt', 'galera_all_writes')
-directory2 = os.path.join(project_path, 'results', 'results-status-cnt-improved-building-graph', 'galera_all_writes')
+directory1 = os.path.join(project_path, 'results', 'results-status-cnt')
+directory2 = os.path.join(project_path, 'results', 'results-status-cnt-improved-building-graph')
 
 # run check
 check_min_violation(directory1, directory2)
