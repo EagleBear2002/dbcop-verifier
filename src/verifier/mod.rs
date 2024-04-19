@@ -81,11 +81,10 @@ impl Verifier {
     }
 
     // write_map: HashMap<(variable, value), (i_node, i_transaction, i_event)>, write_map is used to generate wr
-    // TODO: rename histories -> history?
-    pub fn gen_write_map(histories: &[Session]) -> HashMap<(usize, usize), (usize, usize, usize)> {
+    pub fn gen_write_map(history: &[Session]) -> HashMap<(usize, usize), (usize, usize, usize)> {
         let mut write_map = HashMap::new();
 
-        for (i_node, session) in histories.iter().enumerate() {
+        for (i_node, session) in history.iter().enumerate() {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 for (i_event, event) in transaction.events.iter().enumerate() {
                     if event.write {
@@ -109,10 +108,9 @@ impl Verifier {
         write_map
     }
 
-    // TODO: rename histories -> history?
-    pub fn verify(&mut self, histories: &[Session], status:&mut i32) -> Option<Consistency> {
+    pub fn verify(&mut self, history: &[Session], status:&mut i32) -> Option<Consistency> {
         let moment = std::time::Instant::now();
-        let decision = self.transactional_history_verify(histories, status);
+        let decision = self.transactional_history_verify(history, status);
         let duration = moment.elapsed();
         let time_duration = duration.as_secs() as f64 + f64::from(duration.subsec_nanos()) * 1e-9;
 
@@ -136,12 +134,11 @@ impl Verifier {
         decision
     }
 
-    // TODO: rename histories -> history?
-    pub fn transactional_history_verify(&mut self, histories: &[Session], status:&mut i32) -> Option<Consistency> {
-        let write_map = Self::gen_write_map(histories);
+    pub fn transactional_history_verify(&mut self, history: &[Session], status:&mut i32) -> Option<Consistency> {
+        let write_map = Self::gen_write_map(history);
 
         // enumerate each read event
-        for (i_node_r, session) in histories.iter().enumerate() {
+        for (i_node_r, session) in history.iter().enumerate() {
             for (i_transaction_r, transaction) in session.iter().enumerate() {
                 if transaction.success {
                     for (i_event_r, event) in transaction.events.iter().enumerate() {
@@ -155,8 +152,8 @@ impl Verifier {
                                     assert_eq!(i_event, 0);
                                 } else {
                                     // transaction2 ->(wr) transaction
-                                    // TODO: [i_node - 1] beacuse [i_node + 1] in fn gen_write_map
-                                    let transaction2 = &histories[i_node - 1][i_transaction];
+                                    // [i_node - 1] beacuse [i_node + 1] in fn gen_write_map
+                                    let transaction2 = &history[i_node - 1][i_transaction];
                                     // let event2 = &transaction2.events[i_event];
                                     // info!(self.log,"{:?}\n{:?}", event, event2);
                                     if !transaction2.success {
@@ -187,7 +184,7 @@ impl Verifier {
         // transaction_last_writes: HashMAp<(i_node + 1, i_transaction), HashMap<event.variable, i_event>>
         let mut transaction_last_writes = HashMap::new();
 
-        for (i_node, session) in histories.iter().enumerate() {
+        for (i_node, session) in history.iter().enumerate() {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 if transaction.success {
                     let mut last_writes = HashMap::new();
@@ -203,7 +200,7 @@ impl Verifier {
         }
 
         // checking for non-committed read, non-repeatable read
-        for (i_node, session) in histories.iter().enumerate() {
+        for (i_node, session) in history.iter().enumerate() {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 let mut writes = HashMap::new();
                 // reads: HashMap<event.variable, (wr_i_node, wr_i_transaction, wr_i_event)>
@@ -282,7 +279,7 @@ impl Verifier {
 
         let mut root_write_info = HashSet::new();
 
-        for (i_node, session) in histories.iter().enumerate() {
+        for (i_node, session) in history.iter().enumerate() {
             for (i_transaction, transaction) in session.iter().enumerate() {
                 // read_info: HashMap<event.variable, (wr_i_node, wr_i_transaction)>
                 let mut read_info = HashMap::new();
@@ -302,9 +299,7 @@ impl Verifier {
                                     assert_eq!(wr_i_transaction, 0);
                                     root_write_info.insert(event.variable);
                                 }
-                                // TODO: fix the line for the same format above
-                                // if !(wr_i_node == i_node + 1 && wr_i_transaction == i_transaction) {
-                                if wr_i_node != i_node + 1 || wr_i_transaction != i_transaction {
+                                if !(wr_i_node == i_node + 1 && wr_i_transaction == i_transaction) {
                                     if let Some((old_i_node, old_i_transaction)) = read_info
                                         .insert(event.variable, (wr_i_node, wr_i_transaction))
                                     {
@@ -580,6 +575,7 @@ impl Verifier {
                     }
                     println!("wsc end");
                     println!("wsc took {}secs", now.elapsed().as_secs());
+                    unsafe { upd_reachable = false; }
 
                     if ser_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)

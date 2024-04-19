@@ -1,12 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
-use consistency::util::{ConstrainedLinearization, DiGraph};
+use consistency::util::{ConstrainedLinearization, DiGraph, upd_reachable};
 
 use slog::Logger;
 
 type TransactionId = (usize, usize);
-// TODO: type TransactionInfo = (HashMap<Variable, TransactionId>, HashSet<Variable>)
-type TransactionInfo = (HashMap<usize, TransactionId>, HashSet<usize>);
+type TransactionInfo = (HashMap<Variable, TransactionId>, HashSet<Variable>);
 type Variable = usize;
 
 #[derive(Debug, Default)]
@@ -35,14 +34,13 @@ impl AtomicHistoryPO {
 
         // TODO: this take_closure make no difference
         // so.init_reachable();
+        // unsafe { upd_reachable = true; }
         // so = so.take_closure();
 
-        so.take_closure();
 
         let mut wr_rel: HashMap<Variable, DiGraph<TransactionId>> = Default::default();
 
         for (&txn_id, txn_info) in txns_info.iter() {
-            // TODO: No need to add_vertex(), for add_edge() also add vertex. If so, causal_ww and causal_rw may be faster.
             for &var in txn_info.1.iter() {
                 wr_rel
                     .entry(var)
@@ -66,7 +64,6 @@ impl AtomicHistoryPO {
         }
     }
 
-    // TODO: can be optimized if called multi times
     pub fn get_wr(&self) -> DiGraph<TransactionId> {
         let mut wr: DiGraph<TransactionId> = Default::default();
 
@@ -114,7 +111,7 @@ impl AtomicHistoryPO {
                 for (t2, _) in wr_x.adj_map.iter() {
                     if t1 != t2
                         && (self.vis.has_edge(t2, t1)
-                            || t3s.iter().any(|t3| self.vis.has_edge(t2, t3)))
+                        || t3s.iter().any(|t3| self.vis.has_edge(t2, t3)))
                     {
                         ww_x.add_edge(*t2, *t1);
                     }
@@ -135,10 +132,6 @@ impl AtomicHistoryPO {
             for (t1, t3s) in wr_x.adj_map.iter() {
                 // t2 writes x
                 for (t2, _) in wr_x.adj_map.iter() {
-                    // TODO: pruning in loop
-                    // if t1 != t2
-                    //     && (self.vis.has_edge(t1, t2)
-                    //     || t3s.iter().any(|t3| self.vis.has_edge(t3, t2)))
                     if t1 != t2 {
                         for t3 in t3s.iter() {
                             if t3 != t2 && (self.vis.has_edge(t3, t2) || self.vis.has_edge(t1, t2))
@@ -420,7 +413,6 @@ impl ConstrainedLinearization for SerializableHistory {
     fn forward_book_keeping(&mut self, linearization: &[Self::Vertex]) {
         let curr_txn = linearization.last().unwrap();
         let curr_txn_info = self.history.txns_info.get(curr_txn).unwrap();
-        // TODO: why assert?
         for (&x, _) in curr_txn_info.0.iter() {
             assert!(self
                 .active_write
