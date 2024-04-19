@@ -421,13 +421,13 @@ impl ConstrainedLinearization for SerializableHistory {
         let curr_txn = linearization.last().unwrap();
         let curr_txn_info = self.history.txns_info.get(curr_txn).unwrap();
         // TODO: why assert?
-        // for (&x, _) in curr_txn_info.0.iter() {
-        //     assert!(self
-        //         .active_write
-        //         .entry(x)
-        //         .or_insert_with(Default::default)
-        //         .remove(curr_txn));
-        // }
+        for (&x, _) in curr_txn_info.0.iter() {
+            assert!(self
+                .active_write
+                .entry(x)
+                .or_insert_with(Default::default)
+                .remove(curr_txn));
+        }
         for &x in curr_txn_info.1.iter() {
             let read_by = self
                 .history
