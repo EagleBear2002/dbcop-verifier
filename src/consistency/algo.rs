@@ -34,7 +34,6 @@ impl AtomicHistoryPO {
 
         // TODO: this take_closure make no difference
         // so.init_reachable();
-        // so.upd_reachable = true;
         // so = so.take_closure();
 
         let mut wr_rel: HashMap<Variable, DiGraph<TransactionId>> = Default::default();
@@ -56,7 +55,7 @@ impl AtomicHistoryPO {
 
         AtomicHistoryPO {
             vis: so.clone(),
-            so,
+            so: so,
             root,
             txns_info,
             wr_rel,

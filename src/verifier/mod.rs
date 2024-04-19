@@ -545,7 +545,7 @@ impl Verifier {
 
                     ser_hist.history.vis.init_reachable();
                     ser_hist.history.vis.upd_reachable = true;
-                    unsafe { println!("dfs_count1 = {}", crate::consistency::util::DFS_COUNT); }
+                    unsafe { println!("vis.dfs_count = {}", ser_hist.history.vis.dfs_count); }
                     unsafe { println!("edge_count = {}", crate::consistency::util::EDGE_COUNT); }
 
                     let mut change = false;
@@ -569,7 +569,7 @@ impl Verifier {
                         for (_, rw_x) in rw.iter() {
                             change |= ser_hist.history.vis_includes(rw_x);
                         }
-                        unsafe { println!("dfs_count2 = {}", crate::consistency::util::DFS_COUNT); }
+                        unsafe { println!("dfs_count2 = {}", ser_hist.history.vis.dfs_count); }
                         unsafe { println!("edge_count2 = {}", crate::consistency::util::EDGE_COUNT); }
                         // println!("end iteration");
                     }

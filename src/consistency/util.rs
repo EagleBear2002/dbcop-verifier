@@ -18,6 +18,7 @@ pub struct DiGraph<T>
     pub rev_adj_map: HashMap<T, HashSet<T>>,
     pub reachable: HashMap<T, HashSet<T>>,
     pub upd_reachable: bool,
+    pub dfs_count: i32,
 }
 
 
@@ -38,9 +39,8 @@ impl<T> DiGraph<T>
         }
 
         // u -> v
-        // let vs = self.adj_map.entry(u).or_insert_with(HashSet::new).clone();
         if let Some(vs) = self.adj_map.get(&u).cloned() {
-            unsafe { DFS_COUNT += 1; }
+            self.dfs_count += 1;
             for &v in vs.iter() {
                 self.dfs_init_reachable(v);
                 self.reachable.entry(u).or_insert_with(HashSet::new).insert(v);
@@ -67,8 +67,7 @@ impl<T> DiGraph<T>
 
         // r is reachable for v
         for &r in rs.iter() {
-            // println!("dfs_coutnt += 1");
-            unsafe { DFS_COUNT += 1; }
+            self.dfs_count += 1;
             if entry.insert(r) {
                 change = true;
             }
@@ -155,7 +154,6 @@ impl<T> DiGraph<T>
 
     // connect reachable pairs directly
     // O(n^2)
-    // TODO: Memorized reachable for Search!
     pub fn take_closure(&mut self) -> Self {
         DiGraph {
             // adj_map: self
@@ -172,6 +170,7 @@ impl<T> DiGraph<T>
             rev_adj_map: self.rev_adj_map.clone(),
             reachable: self.reachable.clone(),
             upd_reachable: false,
+            dfs_count: 0,
         }
     }
 
@@ -187,7 +186,6 @@ impl<T> DiGraph<T>
     }
 }
 
-pub(crate) static mut DFS_COUNT: i32 = 0;
 pub(crate) static mut EDGE_COUNT: i32 = 0;
 
 pub trait ConstrainedLinearization {
@@ -292,9 +290,8 @@ pub trait ConstrainedLinearization {
         }
 
         // take vertices with zero active_parent as non-det choices
-        // TODO: n and v should swap?
-        active_parent.iter().for_each(|(n, v)| {
-            if *v == 0 {
+        active_parent.iter().for_each(|(v, n)| {
+            if *n == 0 {
                 non_det_choices.push_back(n.clone());
             }
         });
@@ -309,8 +306,7 @@ pub trait ConstrainedLinearization {
         );
 
         *status = seen.len() as i32;
-        unsafe { println!("dfs_count final = {}", DFS_COUNT); }
-        println!("cnt of status = {}", seen.len());
+        println!("cnt of status = {}", status);
 
         if linearization.is_empty() {
             None
