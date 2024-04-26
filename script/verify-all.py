@@ -12,8 +12,8 @@ def reset_dir(dir):
 project_path = os.path.join('.')
 dbcop_path = os.path.join(project_path, 'target', 'release', 'dbcop')
 excutions_dir_names = [
-  'antidote_all_writes',
-  # 'galera_all_writes',
+  # 'antidote_all_writes',
+  'galera_all_writes',
   # 'galera_partition_writes',
   # 'roachdb_all_writes',
   # 'roachdb_general_all_writes',
@@ -25,7 +25,8 @@ excutions_dir_names = [
 def verify_history_dir(excutions_dir_name):
   excutions_dir = os.path.join(project_path, 'excutions', excutions_dir_name) # eg. antidote_all_writes
 
-  output_dir = os.path.join(project_path, 'results', 'results-status-cnt-improved-building-graph', excutions_dir_name)
+  # output_dir = os.path.join(project_path, 'results', 'building-improved', excutions_dir_name)
+  output_dir = os.path.join(project_path, 'results', 'smc-algorithm', excutions_dir_name)
   reset_dir(output_dir)
 
   for hist in os.listdir(excutions_dir): # eg. 3_30_20_180

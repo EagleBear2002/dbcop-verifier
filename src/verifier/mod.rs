@@ -541,12 +541,10 @@ impl Verifier {
 
                     let wr = ser_hist.history.get_wr();
                     ser_hist.history.vis_includes(&wr);
-                    unsafe { println!("edge_count0 = {}", crate::consistency::util::EDGE_COUNT); }
 
                     ser_hist.history.vis.init_reachable();
                     ser_hist.history.vis.upd_reachable = true;
-                    unsafe { println!("vis.dfs_count = {}", ser_hist.history.vis.dfs_count); }
-                    unsafe { println!("edge_count = {}", crate::consistency::util::EDGE_COUNT); }
+                    unsafe { println!("vis.dfs_count = {}", ser_hist.history.vis.reachable_dfs_count); }
 
                     let mut change = false;
                     // wsc code
@@ -569,9 +567,8 @@ impl Verifier {
                         for (_, rw_x) in rw.iter() {
                             change |= ser_hist.history.vis_includes(rw_x);
                         }
-                        unsafe { println!("dfs_count2 = {}", ser_hist.history.vis.dfs_count); }
-                        unsafe { println!("edge_count2 = {}", crate::consistency::util::EDGE_COUNT); }
-                        // println!("end iteration");
+                        unsafe { println!("dfs_count2 = {}", ser_hist.history.vis.reachable_dfs_count); }
+                        println!("end iteration");
                     }
                     println!("wsc end");
                     println!("wsc took {}secs", now.elapsed().as_secs());

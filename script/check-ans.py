@@ -11,6 +11,7 @@ def get_last_line(file_path):
 
 def check_min_violation(directory1, directory2):
     all_pass = true
+    count = 0
     for root, dirs, files in os.walk(directory1):
         for file in files:
             if file.endswith('result_log.json'):
@@ -27,6 +28,7 @@ def check_min_violation(directory1, directory2):
                     min_violation1 = json_data1.get('minViolation')
                     min_violation2 = json_data2.get('minViolation')
 
+                    count += 1
                     if min_violation1 == min_violation2:
                         print(f"Min violation for {root}/{file} is the same: {min_violation1}")
                     else:
@@ -37,13 +39,13 @@ def check_min_violation(directory1, directory2):
                         print(f"Min violation for {file} is different.")
 
     if all_pass:
-        print("\033[32mAll passed!\033[0m")
+        print(f"\033[32m{count} testcase All passed!\033[0m")
 
 project_path = os.path.join('.')
 
 # target log path
 directory1 = os.path.join(project_path, 'results', 'results-status-cnt')
-directory2 = os.path.join(project_path, 'results', 'results-status-cnt-improved-building-graph')
+directory2 = os.path.join(project_path, 'results', 'smc-algorithm')
 
 # run check
 check_min_violation(directory1, directory2)
