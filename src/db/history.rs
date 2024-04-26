@@ -107,7 +107,7 @@ pub struct History {
     info: String,
     start: DateTime<Local>,
     end: DateTime<Local>,
-    data: Vec<Session>,
+    pub data: Vec<Session>,
 }
 
 impl History {

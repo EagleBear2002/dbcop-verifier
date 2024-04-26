@@ -206,75 +206,137 @@ pub trait ConstrainedLinearization {
 
     fn do_dfs(
         &mut self,
-        non_det_choices: &mut BTreeSet<Self::Vertex>,
+        non_det_choices: &mut VecDeque<Self::Vertex>,
         active_parent: &mut HashMap<Self::Vertex, usize>,
         linearization: &mut Vec<Self::Vertex>,
-        do_dfs_count: &mut i32,
+        seen: &mut HashSet<BTreeSet<Self::Vertex>>,
     ) -> bool {
-        if non_det_choices.is_empty() {
-            return true;
-        }
+        // println!("explored {}", seen.len());
+        // unsafe { println!("dfs_count = {}", dfs_count); }
+        if !seen.insert(non_det_choices.iter().cloned().collect()) {
+            // seen is not modified
+            // non-det choices are already explored
+            false
+        } else if non_det_choices.is_empty() {
+            true
+        } else {
+            let curr_non_det_choices = non_det_choices.len();
+            for _ in 0..curr_non_det_choices {
+                if let Some(u) = non_det_choices.pop_front() {
+                    if self.allow_next(linearization, &u) {
+                        // access it again
+                        if let Some(vs) = self.children_of(&u) {
+                            for v in vs {
+                                let entry = active_parent
+                                    .get_mut(&v)
+                                    .expect("all vertices are expected in active parent");
+                                *entry -= 1;
+                                if *entry == 0 {
+                                    non_det_choices.push_back(v);
+                                }
+                            }
+                        }
 
-        let curr_choices = non_det_choices.clone();
-        for u in curr_choices {
-            if !self.allow_next(linearization, &u) {
-                continue;
-            }
+                        linearization.push(u);
 
-            *do_dfs_count += 1;
-            println!("do_dfs_count = {}", do_dfs_count);
-            if (do_dfs_count > &mut 100000) {
-                exit(1);
-                return true;
-            }
+                        self.forward_book_keeping(linearization);
 
-            // access it again
-            if let Some(vs) = self.children_of(&u) {
-                for v in vs {
-                    let entry = active_parent
-                        .get_mut(&v)
-                        .expect("all vertices are expected in active parent");
-                    *entry -= 1;
-                    if *entry == 0 {
-                        non_det_choices.insert(v);
+                        if self.do_dfs(non_det_choices, active_parent, linearization, seen) {
+                            return true;
+                        }
+
+                        self.backtrack_book_keeping(linearization);
+
+                        linearization.pop();
+
+                        if let Some(vs) = self.children_of(&u) {
+                            for v in vs {
+                                let entry = active_parent
+                                    .get_mut(&v)
+                                    .expect("all vertices are expected in active parent");
+                                *entry += 1;
+                            }
+                        }
+                        non_det_choices.drain(curr_non_det_choices - 1..);
                     }
+                    non_det_choices.push_back(u);
                 }
             }
-
-            non_det_choices.remove(&u);
-            linearization.push(u);
-
-            self.forward_book_keeping(linearization);
-
-            if self.do_dfs(non_det_choices, active_parent, linearization, do_dfs_count) {
-                return true;
-            }
-
-            self.backtrack_book_keeping(linearization);
-
-            linearization.pop();
-            non_det_choices.insert(u);
-
-            if let Some(vs) = self.children_of(&u) {
-                for v in vs {
-                    let entry = active_parent
-                        .get_mut(&v)
-                        .expect("all vertices are expected in active parent");
-                    *entry += 1;
-                    if *entry == 1 {
-                        non_det_choices.remove(&v);
-                    }
-                }
-            }
+            false
         }
-        return false;
     }
+
+    // fn do_dfs(
+    //     &mut self,
+    //     non_det_choices: &mut BTreeSet<Self::Vertex>,
+    //     active_parent: &mut HashMap<Self::Vertex, usize>,
+    //     linearization: &mut Vec<Self::Vertex>,
+    //     do_dfs_count: &mut i32,
+    // ) -> bool {
+    //     if non_det_choices.is_empty() {
+    //         return true;
+    //     }
+    //
+    //     let curr_choices = non_det_choices.clone();
+    //     for u in curr_choices {
+    //         if !self.allow_next(linearization, &u) {
+    //             continue;
+    //         }
+    //
+    //         *do_dfs_count += 1;
+    //         println!("do_dfs_count = {}", do_dfs_count);
+    //         if (do_dfs_count > &mut 100000) {
+    //             exit(1);
+    //             return true;
+    //         }
+    //
+    //         // access it again
+    //         if let Some(vs) = self.children_of(&u) {
+    //             for v in vs {
+    //                 let entry = active_parent
+    //                     .get_mut(&v)
+    //                     .expect("all vertices are expected in active parent");
+    //                 *entry -= 1;
+    //                 if *entry == 0 {
+    //                     non_det_choices.insert(v);
+    //                 }
+    //             }
+    //         }
+    //
+    //         non_det_choices.remove(&u);
+    //         linearization.push(u);
+    //
+    //         self.forward_book_keeping(linearization);
+    //
+    //         if self.do_dfs(non_det_choices, active_parent, linearization, do_dfs_count) {
+    //             return true;
+    //         }
+    //
+    //         self.backtrack_book_keeping(linearization);
+    //
+    //         linearization.pop();
+    //         non_det_choices.insert(u);
+    //
+    //         if let Some(vs) = self.children_of(&u) {
+    //             for v in vs {
+    //                 let entry = active_parent
+    //                     .get_mut(&v)
+    //                     .expect("all vertices are expected in active parent");
+    //                 *entry += 1;
+    //                 if *entry == 1 {
+    //                     non_det_choices.remove(&v);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return false;
+    // }
 
     fn get_linearization(&mut self, status: &mut i32) -> Option<Vec<Self::Vertex>> {
         println!("begin get_linearization");
 
         // vertice that can be border
-        let mut non_det_choices: BTreeSet<Self::Vertex> = Default::default();
+        let mut non_det_choices: VecDeque<Self::Vertex> = Default::default();
         // possible parent count
         let mut active_parent: HashMap<Self::Vertex, usize> = Default::default();
         let mut linearization: Vec<Self::Vertex> = Default::default();
@@ -296,14 +358,14 @@ pub trait ConstrainedLinearization {
         // take vertices with zero active_parent as non-det choices
         active_parent.iter().for_each(|(v, n)| {
             if *n == 0 {
-                non_det_choices.insert(v.clone());
+                non_det_choices.push_back(v.clone());
             }
         });
 
         println!("begin_dfs");
 
         let mut do_dfs_count = 0;
-        self.do_dfs(&mut non_det_choices, &mut active_parent, &mut linearization, &mut do_dfs_count);
+        self.do_dfs(&mut non_det_choices, &mut active_parent, &mut linearization, &mut seen);
 
         *status = seen.len() as i32;
         println!("cnt of status = {}", status);

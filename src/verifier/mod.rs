@@ -544,7 +544,7 @@ impl Verifier {
 
                     ser_hist.history.vis.init_reachable();
                     ser_hist.history.vis.upd_reachable = true;
-                    unsafe { println!("vis.dfs_count = {}", ser_hist.history.vis.reachable_dfs_count); }
+                    unsafe { println!("vis.reachable_dfs_count = {}", ser_hist.history.vis.reachable_dfs_count); }
 
                     let mut change = false;
                     // wsc code

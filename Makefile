@@ -23,3 +23,25 @@ verify-all: build
 
 check-ans:
 	python3 ./script/check-ans.py
+
+gen:
+
+run:
+	./target/dbcop-print run -d ./histories --db postgres-ser -o ./hist 127.0.0.1:5432
+
+print:
+	./target/dbcop-print print -d ./hist/hist-00000/
+
+verify: build
+	./target/release/dbcop verify -d ./hist/hist-00000 -o ./results -c ser
+
+gen:
+
+run:
+	./target/dbcop-print run -d ./histories --db postgres-ser -o ./hist 127.0.0.1:5432
+
+print:
+	./target/dbcop-print print -d ./hist/hist-00000/
+
+verify: build
+	./target/release/dbcop verify -d ./hist/hist-00000 -o ./results -c ser

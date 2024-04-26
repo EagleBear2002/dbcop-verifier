@@ -11,7 +11,7 @@ use std::path::Path;
 
 use std::fs;
 
-use dbcop::db::history::generate_mult_histories;
+use dbcop::db::history::{Event, generate_mult_histories, Session, Transaction};
 use dbcop::db::history::History;
 use dbcop::verifier::Verifier;
 
@@ -135,9 +135,25 @@ fn main() {
                 Path::new(matches.value_of("v_directory").unwrap()).join("history.bincode");
             let file = File::open(v_path).unwrap();
             let buf_reader = BufReader::new(file);
-            let hist: History = bincode::deserialize_from(buf_reader).unwrap();
+            let mut hist: History = bincode::deserialize_from(buf_reader).unwrap();
 
-            // println!("{:?}", hist);
+
+            let w1: Event = Event { write: true, variable: 0, value: 1, success: true };
+            let w2: Event = Event { write: true, variable: 0, value: 2, success: true };
+            let r3: Event = Event { write: false, variable: 0, value: 1, success: true };
+
+            let t1: Transaction = Transaction { events: vec![w1], success: true };
+            let t2: Transaction = Transaction { events: vec![w2], success: true };
+            let t3: Transaction = Transaction { events: vec![r3], success: true };
+
+            let s1: Session = vec![t1];
+            let s2: Session = vec![t2, t3];
+
+            hist.data.clear();
+            hist.data.push(s1);
+            hist.data.push(s2);
+
+            println!("{:?}", hist);
 
             let o_dir = Path::new(matches.value_of("o_directory").unwrap());
 
