@@ -211,11 +211,8 @@ pub trait ConstrainedLinearization {
         linearization: &mut Vec<Self::Vertex>,
         seen: &mut HashSet<BTreeSet<Self::Vertex>>,
     ) -> bool {
-        // println!("explored {}", seen.len());
-        // unsafe { println!("dfs_count = {}", dfs_count); }
+        println!("seen: {:?}", non_det_choices);
         if !seen.insert(non_det_choices.iter().cloned().collect()) {
-            // seen is not modified
-            // non-det choices are already explored
             false
         } else if non_det_choices.is_empty() {
             true
@@ -223,6 +220,7 @@ pub trait ConstrainedLinearization {
             let curr_non_det_choices = non_det_choices.len();
             for _ in 0..curr_non_det_choices {
                 if let Some(u) = non_det_choices.pop_front() {
+                    println!("in loop: {:?}", non_det_choices);
                     if self.allow_next(linearization, &u) {
                         // access it again
                         if let Some(vs) = self.children_of(&u) {
@@ -233,6 +231,7 @@ pub trait ConstrainedLinearization {
                                 *entry -= 1;
                                 if *entry == 0 {
                                     non_det_choices.push_back(v);
+                                    println!("after insert: {:?}", non_det_choices);
                                 }
                             }
                         }
@@ -258,6 +257,7 @@ pub trait ConstrainedLinearization {
                             }
                         }
                         non_det_choices.drain(curr_non_det_choices - 1..);
+                        println!("after drain: {:?}", non_det_choices);
                     }
                     non_det_choices.push_back(u);
                 }

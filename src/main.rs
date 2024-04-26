@@ -147,11 +147,13 @@ fn main() {
             let t3: Transaction = Transaction { events: vec![r3], success: true };
 
             let s1: Session = vec![t1];
-            let s2: Session = vec![t2, t3];
+            let s2: Session = vec![t2];
+            let s3: Session = vec![t3];
 
             hist.data.clear();
             hist.data.push(s1);
             hist.data.push(s2);
+            hist.data.push(s3);
 
             println!("{:?}", hist);
 
