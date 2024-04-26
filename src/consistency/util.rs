@@ -7,6 +7,8 @@ use std::collections::{HashMap, HashSet};
 use std::collections::VecDeque;
 
 use std::collections::BTreeSet;
+use std::ops::Add;
+use std::process::exit;
 
 // Directed Graph
 #[derive(Default, Debug, Clone)]
@@ -186,6 +188,7 @@ impl<T> DiGraph<T>
     }
 }
 
+// pub mut do_dfs_count: i32 = 0;
 pub trait ConstrainedLinearization {
     type Vertex: Hash + Eq + Copy + Ord + Debug;
 
@@ -206,50 +209,62 @@ pub trait ConstrainedLinearization {
         non_det_choices: &mut BTreeSet<Self::Vertex>,
         active_parent: &mut HashMap<Self::Vertex, usize>,
         linearization: &mut Vec<Self::Vertex>,
+        do_dfs_count: &mut i32,
     ) -> bool {
         if non_det_choices.is_empty() {
             return true;
         }
 
         let curr_choices = non_det_choices.clone();
-        for Some(u) in curr_choices {
+        for u in curr_choices {
+            if !self.allow_next(linearization, &u) {
+                continue;
+            }
+
+            *do_dfs_count += 1;
+            println!("do_dfs_count = {}", do_dfs_count);
+            if (do_dfs_count > &mut 100000) {
+                exit(1);
+                return true;
+            }
+
+            // access it again
+            if let Some(vs) = self.children_of(&u) {
+                for v in vs {
+                    let entry = active_parent
+                        .get_mut(&v)
+                        .expect("all vertices are expected in active parent");
+                    *entry -= 1;
+                    if *entry == 0 {
+                        non_det_choices.insert(v);
+                    }
+                }
+            }
+
             non_det_choices.remove(&u);
-            if self.allow_next(linearization, &u) {
-                // access it again
-                if let Some(vs) = self.children_of(&u) {
-                    for v in vs {
-                        let entry = active_parent
-                            .get_mut(&v)
-                            .expect("all vertices are expected in active parent");
-                        *entry -= 1;
-                        if *entry == 0 {
-                            non_det_choices.insert(v);
-                        }
+            linearization.push(u);
+
+            self.forward_book_keeping(linearization);
+
+            if self.do_dfs(non_det_choices, active_parent, linearization, do_dfs_count) {
+                return true;
+            }
+
+            self.backtrack_book_keeping(linearization);
+
+            linearization.pop();
+            non_det_choices.insert(u);
+
+            if let Some(vs) = self.children_of(&u) {
+                for v in vs {
+                    let entry = active_parent
+                        .get_mut(&v)
+                        .expect("all vertices are expected in active parent");
+                    *entry += 1;
+                    if *entry == 1 {
+                        non_det_choices.remove(&v);
                     }
                 }
-
-                linearization.push(u);
-
-                self.forward_book_keeping(linearization);
-
-                if self.do_dfs(non_det_choices, active_parent, linearization) {
-                    return true;
-                }
-
-                self.backtrack_book_keeping(linearization);
-
-                linearization.pop();
-
-                if let Some(vs) = self.children_of(&u) {
-                    for v in vs {
-                        let entry = active_parent
-                            .get_mut(&v)
-                            .expect("all vertices are expected in active parent");
-                        *entry += 1;
-                    }
-                }
-                // non_det_choices.drain(curr_choices.len() - 1..);
-                non_det_choices.insert(u);
             }
         }
         return false;
@@ -287,7 +302,8 @@ pub trait ConstrainedLinearization {
 
         println!("begin_dfs");
 
-        self.do_dfs(&mut non_det_choices, &mut active_parent, &mut linearization);
+        let mut do_dfs_count = 0;
+        self.do_dfs(&mut non_det_choices, &mut active_parent, &mut linearization, &mut do_dfs_count);
 
         *status = seen.len() as i32;
         println!("cnt of status = {}", status);
