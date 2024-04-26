@@ -138,13 +138,13 @@ fn main() {
             let mut hist: History = bincode::deserialize_from(buf_reader).unwrap();
 
 
-            let w1: Event = Event { write: true, variable: 0, value: 1, success: true };
-            let w2: Event = Event { write: true, variable: 0, value: 2, success: true };
-            let r3: Event = Event { write: false, variable: 0, value: 1, success: true };
+            let e1: Event = Event { write: false, variable: 0, value: 0, success: true };
+            let e2: Event = Event { write: true, variable: 0, value: 1, success: true };
+            let e3: Event = Event { write: false, variable: 0, value: 1, success: true };
 
-            let t1: Transaction = Transaction { events: vec![w1], success: true };
-            let t2: Transaction = Transaction { events: vec![w2], success: true };
-            let t3: Transaction = Transaction { events: vec![r3], success: true };
+            let t1: Transaction = Transaction { events: vec![e1], success: true };
+            let t2: Transaction = Transaction { events: vec![e2], success: true };
+            let t3: Transaction = Transaction { events: vec![e3], success: true };
 
             let s1: Session = vec![t1];
             let s2: Session = vec![t2];

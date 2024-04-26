@@ -211,18 +211,21 @@ pub trait ConstrainedLinearization {
         linearization: &mut Vec<Self::Vertex>,
         seen: &mut HashSet<BTreeSet<Self::Vertex>>,
     ) -> bool {
-        println!("seen: {:?}", non_det_choices);
+        println!("dfs: {:?}", non_det_choices);
         if !seen.insert(non_det_choices.iter().cloned().collect()) {
             false
         } else if non_det_choices.is_empty() {
+            println!("seen: {:?}", non_det_choices);
             true
         } else {
+            println!("seen: {:?}", non_det_choices);
             let curr_non_det_choices = non_det_choices.len();
             for _ in 0..curr_non_det_choices {
                 if let Some(u) = non_det_choices.pop_front() {
                     println!("in loop: {:?}", non_det_choices);
                     if self.allow_next(linearization, &u) {
                         // access it again
+                        println!("allow_next: {:?}, {:?}", linearization, u);
                         if let Some(vs) = self.children_of(&u) {
                             for v in vs {
                                 let entry = active_parent
