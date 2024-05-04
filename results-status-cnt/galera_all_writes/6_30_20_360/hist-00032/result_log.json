@@ -1,4 +1,0 @@
-{"msg":"Application started","level":"INFO","ts":"2024-04-14T13:11:27.688800841Z","started_at":"2024-04-14 21:11:27.688678221 +08:00"}
-{"msg":"wr:(5, 11, 9), rd:(3, 22, 17)","level":"INFO","ts":"2024-04-14T13:11:27.689374997Z"}
-{"msg":"finished early","level":"INFO","ts":"2024-04-14T13:11:27.689560419Z","description":"did not read the latest write within transaction","reason":"LOST UPDATE"}
-{"msg":"the algorithm finished","level":"INFO","ts":"2024-04-14T13:11:27.689867927Z","minViolation":"ReadCommitted","duration":0.0008202970000000001,"bicomponent":false,"sat":false,"model":"Serializable","number_of_status":"0"}

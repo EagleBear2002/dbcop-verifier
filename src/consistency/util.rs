@@ -225,7 +225,6 @@ pub trait ConstrainedLinearization {
             println!("do_dfs_count = {}", do_dfs_count);
             if (do_dfs_count > &mut 100000) {
                 exit(1);
-                return true;
             }
 
             // access it again
