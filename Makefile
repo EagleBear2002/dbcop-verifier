@@ -29,3 +29,6 @@ mem-analyze-test:
 
 parse-massif:
 	python3 ./script/parse-massif.py
+
+draw-csv:
+	python3 ./script/draw-csv.py
