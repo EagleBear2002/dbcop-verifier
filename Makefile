@@ -23,3 +23,9 @@ verify-all: build
 
 check-ans:
 	python3 ./script/check-ans.py
+
+mem-analyze-test:
+	valgrind --tool=massif target/debug/dbcop verify -d ./excutions/galera_partition_writes/9_30_20_540/hist-00000 -o ./results -c ser
+
+parse-massif:
+	python3 ./script/parse-massif.py

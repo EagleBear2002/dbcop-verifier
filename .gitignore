@@ -138,3 +138,22 @@ Cargo.lock
 /output/
 /output/roachdb_general_partition_writes/
 /results/
+
+### Valgrind ###
+# Callgrind output files
+callgrind.out
+callgrind.out.*
+
+# Cachegrind output files
+cachegrind.out
+cachegrind.out.*
+
+# Massif output files
+massif.out
+massif.out.*
+
+# BBV output files
+bb.out
+bb.out.*
+
+

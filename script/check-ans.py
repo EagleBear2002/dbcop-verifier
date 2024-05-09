@@ -1,8 +1,6 @@
 import os
 import json
 
-from sqlalchemy import true, false
-
 def get_last_line(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -34,7 +32,7 @@ def check_min_violation(directory1, directory2):
                     if min_violation1 == min_violation2:
                         pass_cnt += 1
                         # print(f"Min violation for {root}/{file} is the same: {min_violation1}")
-                    elif min_violation2 == None:
+                    elif min_violation1 == None or min_violation2 == None:
                         none_cnt += 1
                     else:
                         fail_cnt += 1
@@ -54,8 +52,8 @@ def check_min_violation(directory1, directory2):
 project_path = os.path.join('.')
 
 # target log path
-directory1 = os.path.join(project_path, 'results', 'results-status-cnt')
-directory2 = os.path.join(project_path, 'results', 'smc-algorithm')
+directory2 = os.path.join(project_path, 'results', 'results-raw')
+directory1 = os.path.join(project_path, 'results', 'smc-algorithm')
 
 # run check
 check_min_violation(directory1, directory2)
