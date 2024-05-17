@@ -209,61 +209,58 @@ pub trait ConstrainedLinearization {
         active_parent: &mut HashMap<Self::Vertex, usize>,
         linearization: &mut Vec<Self::Vertex>,
         seen: &mut HashSet<BTreeSet<Self::Vertex>>,
-        // seen: &mut HashSet<Map<>>,
     ) -> bool {
-        // println!("explored {}", seen.len());
-        // unsafe { println!("dfs_count = {}", dfs_count); }
         if !seen.insert(non_det_choices.iter().cloned().collect()) {
-            // seen is not modified
-            // non-det choices are already explored
-            false
-        } else if non_det_choices.is_empty() {
-            true
-        } else {
-            let curr_non_det_choices = non_det_choices.len();
-            for _ in 0..curr_non_det_choices {
-                if let Some(u) = non_det_choices.pop_front() {
-                    if self.allow_next(linearization, &u) {
-                        // access it again
-                        if let Some(vs) = self.children_of(&u) {
-                            for v in vs {
-                                let entry = active_parent
-                                    .get_mut(&v)
-                                    .expect("all vertices are expected in active parent");
-                                *entry -= 1;
-                                if *entry == 0 {
-                                    non_det_choices.push_back(v);
-                                }
-                            }
-                        }
-
-                        linearization.push(u);
-
-                        self.forward_book_keeping(linearization);
-
-                        if self.do_dfs(non_det_choices, active_parent, linearization, seen) {
-                            return true;
-                        }
-
-                        self.backtrack_book_keeping(linearization);
-
-                        linearization.pop();
-
-                        if let Some(vs) = self.children_of(&u) {
-                            for v in vs {
-                                let entry = active_parent
-                                    .get_mut(&v)
-                                    .expect("all vertices are expected in active parent");
-                                *entry += 1;
-                            }
-                        }
-                        non_det_choices.drain(curr_non_det_choices - 1..);
-                    }
-                    non_det_choices.push_back(u);
-                }
-            }
-            false
+            return false;
         }
+
+        if non_det_choices.is_empty() {
+            return true;
+        }
+
+        let curr_non_det_choices = non_det_choices.len();
+        for _ in 0..curr_non_det_choices {
+            if let Some(u) = non_det_choices.pop_front() {
+                if self.allow_next(linearization, &u) {
+                    // access it again
+                    if let Some(vs) = self.children_of(&u) {
+                        for v in vs {
+                            let entry = active_parent
+                                .get_mut(&v)
+                                .expect("all vertices are expected in active parent");
+                            *entry -= 1;
+                            if *entry == 0 {
+                                non_det_choices.push_back(v);
+                            }
+                        }
+                    }
+
+                    linearization.push(u);
+
+                    self.forward_book_keeping(linearization);
+
+                    if self.do_dfs(non_det_choices, active_parent, linearization, seen) {
+                        return true;
+                    }
+
+                    self.backtrack_book_keeping(linearization);
+
+                    linearization.pop();
+
+                    if let Some(vs) = self.children_of(&u) {
+                        for v in vs {
+                            let entry = active_parent
+                                .get_mut(&v)
+                                .expect("all vertices are expected in active parent");
+                            *entry += 1;
+                        }
+                    }
+                    non_det_choices.drain(curr_non_det_choices - 1..);
+                }
+                non_det_choices.push_back(u);
+            }
+        }
+        return false;
     }
 
     fn get_linearization(&mut self, status: &mut i32) -> Option<Vec<Self::Vertex>> {
