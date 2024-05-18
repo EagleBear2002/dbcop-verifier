@@ -546,7 +546,7 @@ impl Verifier {
                     ser_hist.history.vis.init_reachable();
                     ser_hist.history.vis.upd_reachable = true;
                     unsafe { println!("vis.dfs_count = {}", ser_hist.history.vis.dfs_count); }
-                    unsafe { println!("edge_count = {}", crate::consistency::util::EDGE_COUNT); }
+                    unsafe { println!("EDGE_COUNT = {}", crate::consistency::util::EDGE_COUNT); }
 
                     let mut change = false;
                     // wsc code
@@ -607,6 +607,10 @@ impl Verifier {
                         // lin_o.is_some();
 
                         now = std::time::Instant::now();
+                        // info!(
+                        //     self.log,
+                        //     "{:?} ", ser_hist
+                        // );
                         if ser_hist.get_linearization(status).is_some() {
                             println!("dbcop main algorithm took {}secs", now.elapsed().as_secs());
                             None
