@@ -289,7 +289,7 @@ pub trait ConstrainedLinearization {
         // take vertices with zero active_parent as non-det choices
         active_parent.iter().for_each(|(v, n)| {
             if *n == 0 {
-                non_det_choices.push_back(n.clone());
+                non_det_choices.push_back(v.clone());
             }
         });
 

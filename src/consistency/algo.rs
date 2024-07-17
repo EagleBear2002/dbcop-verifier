@@ -455,6 +455,7 @@ impl ConstrainedLinearization for SerializableHistory {
     }
 
     fn allow_next(&self, _linearization: &[Self::Vertex], v: &Self::Vertex) -> bool {
+        // if self writes x and last version of x has not been read totally, return false!
         let curr_txn_info = self.history.txns_info.get(v).unwrap();
         curr_txn_info
             .1

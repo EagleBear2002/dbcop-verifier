@@ -523,8 +523,8 @@ impl Verifier {
                     for (_, ww_x) in ww.iter() {
                         si_hist.history.vis_includes(ww_x);
                     }
+                    // TODO: get more ww by iterating?
                     si_hist.history.vis_is_trans();
-
                     if si_hist.history.vis.has_cycle() {
                         Some(self.consistency_model)
                     } else {
