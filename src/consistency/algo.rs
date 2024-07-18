@@ -4,8 +4,8 @@ use consistency::util::{ConstrainedLinearization, DiGraph};
 
 use slog::Logger;
 
-type TransactionId = (usize, usize);
-type TransactionInfo = (HashMap<Variable, TransactionId>, HashSet<Variable>);
+type TransactionId = (usize, usize); // (sessionNo, txnNo in session)
+type TransactionInfo = (HashMap<Variable, TransactionId>, HashSet<Variable>); // readOp and corresponding writes txn; write ops
 type Variable = usize;
 
 #[derive(Debug, Default)]
@@ -39,17 +39,17 @@ impl AtomicHistoryPO {
         let mut wr_rel: HashMap<Variable, DiGraph<TransactionId>> = Default::default();
 
         for (&txn_id, txn_info) in txns_info.iter() {
-            for &var in txn_info.1.iter() {
+            for &x in txn_info.1.iter() {
                 wr_rel
-                    .entry(var)
+                    .entry(x)
                     .or_insert_with(Default::default)
                     .add_vertex(txn_id);
             }
-            for (&var, &txn_id2) in txn_info.0.iter() {
+            for (&x, &txn_id2) in txn_info.0.iter() { // txn_id2 writes x
                 wr_rel
-                    .entry(var)
+                    .entry(x)
                     .or_insert_with(Default::default)
-                    .add_edge(txn_id2, txn_id);
+                    .add_edge(txn_id2, txn_id); // txn_id2 (wr)-> txn_id
             }
         }
 
@@ -388,7 +388,7 @@ impl ConstrainedLinearization for SnapshotIsolationHistory {
 #[derive(Debug)]
 pub struct SerializableHistory {
     pub history: AtomicHistoryPO,
-    pub active_write: HashMap<Variable, HashSet<TransactionId>>,
+    pub active_write: HashMap<Variable, HashSet<TransactionId>>, // <x, {t1}> means t1 reads x and t1 not in linearization
     log: Logger,
 }
 
@@ -429,7 +429,7 @@ impl ConstrainedLinearization for SerializableHistory {
                 .unwrap();
             self.active_write.insert(x, read_by.clone());
         }
-        self.active_write.retain(|_, ts| !ts.is_empty());
+        self.active_write.retain(|_, ts| !ts.is_empty()); // erase empty sets
     }
 
     fn backtrack_book_keeping(&mut self, linearization: &[Self::Vertex]) {
@@ -458,7 +458,7 @@ impl ConstrainedLinearization for SerializableHistory {
         // if self writes x and last version of x has not been read totally, return false!
         let curr_txn_info = self.history.txns_info.get(v).unwrap();
         curr_txn_info
-            .1
+            .1 // HashSet<Variable>, the set of variables write by txn
             .iter()
             .all(|x| match self.active_write.get(x) {
                 Some(ts) if ts.len() == 1 => ts.iter().next().unwrap() == v,

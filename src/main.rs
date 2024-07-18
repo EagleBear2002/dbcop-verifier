@@ -137,7 +137,7 @@ fn main() {
             let buf_reader = BufReader::new(file);
             let hist: History = bincode::deserialize_from(buf_reader).unwrap();
 
-            // println!("{:?}", hist);
+            println!("{:?}", hist);
 
             let o_dir = Path::new(matches.value_of("o_directory").unwrap());
 

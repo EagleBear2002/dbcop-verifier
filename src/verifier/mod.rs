@@ -607,10 +607,10 @@ impl Verifier {
                         // lin_o.is_some();
 
                         now = std::time::Instant::now();
-                        // info!(
-                        //     self.log,
-                        //     "{:?} ", ser_hist
-                        // );
+                        info!(
+                            self.log,
+                            "{:?} ", ser_hist
+                        );
                         if ser_hist.get_linearization(status).is_some() {
                             println!("dbcop main algorithm took {}secs", now.elapsed().as_secs());
                             None

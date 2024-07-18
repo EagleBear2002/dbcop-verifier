@@ -7,6 +7,7 @@ use std::collections::{HashMap, HashSet};
 use std::collections::VecDeque;
 
 use std::collections::BTreeSet;
+use std::process::exit;
 
 // Directed Graph
 #[derive(Default, Debug, Clone)]
@@ -219,8 +220,10 @@ pub trait ConstrainedLinearization {
         }
 
         let curr_non_det_choices = non_det_choices.len();
+        println!("curr_non_det_choices = {}", curr_non_det_choices);
         for _ in 0..curr_non_det_choices {
             if let Some(u) = non_det_choices.pop_front() {
+                println!("non_det_choices.pop_front()");
                 if self.allow_next(linearization, &u) {
                     // access it again
                     if let Some(vs) = self.children_of(&u) {
@@ -229,7 +232,9 @@ pub trait ConstrainedLinearization {
                                 .get_mut(&v)
                                 .expect("all vertices are expected in active parent");
                             *entry -= 1;
+                            println!("entry = {}", entry);
                             if *entry == 0 {
+                                println!("non_det_choices.push_back() new");
                                 non_det_choices.push_back(v);
                             }
                         }
@@ -258,6 +263,7 @@ pub trait ConstrainedLinearization {
                     non_det_choices.drain(curr_non_det_choices - 1..);
                 }
                 non_det_choices.push_back(u);
+                println!("non_det_choices.push_back() again!");
             }
         }
         return false;
@@ -302,10 +308,12 @@ pub trait ConstrainedLinearization {
             &mut seen,
         );
 
+
         *status = seen.len() as i32;
         println!("cnt of status = {}", status);
 
         if linearization.is_empty() {
+            println!("################ linearization is empty!");
             None
         } else {
             Some(linearization)
