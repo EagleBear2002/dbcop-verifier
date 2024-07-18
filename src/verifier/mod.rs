@@ -577,8 +577,10 @@ impl Verifier {
                     println!("wsc took {}secs", now.elapsed().as_secs());
 
                     if ser_hist.history.vis.has_cycle() {
+                        println!("Known Graph has cycle!");
                         Some(self.consistency_model)
                     } else {
+                        println!("Known Graph has no cycle!");
                         // let lin_o = ser_hist.get_linearization(status);
                         // {
                         //     // checking correctness

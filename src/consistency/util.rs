@@ -225,6 +225,7 @@ pub trait ConstrainedLinearization {
             if let Some(u) = non_det_choices.pop_front() {
                 println!("non_det_choices.pop_front()");
                 if self.allow_next(linearization, &u) {
+                    println!("allow_next success!");
                     // access it again
                     if let Some(vs) = self.children_of(&u) {
                         for v in vs {
@@ -261,6 +262,8 @@ pub trait ConstrainedLinearization {
                         }
                     }
                     non_det_choices.drain(curr_non_det_choices - 1..);
+                } else {
+                    println!("allow_next fail!");
                 }
                 non_det_choices.push_back(u);
                 println!("non_det_choices.push_back() again!");

@@ -455,15 +455,15 @@ impl ConstrainedLinearization for SerializableHistory {
     }
 
     fn allow_next(&self, _linearization: &[Self::Vertex], v: &Self::Vertex) -> bool {
-        // if self writes x and last version of x has not been read totally, return false!
+        // if v writes x and last version of x has not been read totally, return false!
         let curr_txn_info = self.history.txns_info.get(v).unwrap();
         curr_txn_info
             .1 // HashSet<Variable>, the set of variables write by txn
             .iter()
             .all(|x| match self.active_write.get(x) {
-                Some(ts) if ts.len() == 1 => ts.iter().next().unwrap() == v,
+                Some(ts) if ts.len() == 1 => {println!("case 1"); ts.iter().next().unwrap() == v},
                 None => true,
-                _ => false,
+                _ => {println!("case 3"); false},
             })
     }
 
